@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   PieChart,
   Pie,
@@ -16,11 +15,6 @@ interface MonthDonutCardProps {
   balance: number;
 }
 
-const tooltipStyle = {
-  borderRadius: "12px",
-  border: "none",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-};
 
 export default function MonthDonutCard({
   totalIncome,
@@ -34,75 +28,72 @@ export default function MonthDonutCard({
 
   if (incomeExpenseDonutData.length === 0) {
     return (
-      <Card className="rounded-2xl border shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Income vs Expense</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Total income ৳{totalIncome.toLocaleString()} • Total expense ৳{totalExpense.toLocaleString()}
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="flex h-[200px] items-center justify-center rounded-xl bg-muted/50 text-muted-foreground">
-            No data this month
-          </div>
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <p className="text-sm font-semibold text-foreground mb-0.5">Income vs Expense</p>
+        <p className="text-xs text-muted-foreground mb-4">
+          +৳{totalIncome.toLocaleString()} income · -৳{totalExpense.toLocaleString()} expense
+        </p>
+        <div className="flex h-[180px] items-center justify-center rounded-xl bg-muted text-sm text-muted-foreground">
+          No data this month
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="rounded-2xl border shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">Income vs Expense</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Total income ৳{totalIncome.toLocaleString()} • Total expense ৳{totalExpense.toLocaleString()}
-        </p>
-      </CardHeader>
-      <CardContent>
-        <div className="mx-auto h-[260px] w-full max-w-[280px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Tooltip
-                formatter={(value: number | undefined) => [`৳${(value ?? 0).toLocaleString()}`, ""]}
-                contentStyle={tooltipStyle}
+    <div className="rounded-2xl border border-border bg-card p-4">
+      <p className="text-sm font-semibold text-foreground mb-0.5">Income vs Expense</p>
+      <p className="text-xs text-muted-foreground mb-2">
+        +৳{totalIncome.toLocaleString()} income · -৳{totalExpense.toLocaleString()} expense
+      </p>
+      <div className="mx-auto h-[240px] w-full max-w-[260px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Tooltip
+              formatter={(value: number | undefined) => [`৳${(value ?? 0).toLocaleString()}`, ""]}
+              contentStyle={{
+                borderRadius: "10px",
+                border: "1px solid var(--border)",
+                boxShadow: "none",
+                fontSize: "12px",
+              }}
+            />
+            <Pie
+              data={incomeExpenseDonutData}
+              dataKey="value"
+              nameKey="name"
+              innerRadius="55%"
+              outerRadius="88%"
+              strokeWidth={2}
+              stroke="var(--card)"
+              paddingAngle={2}
+            >
+              {incomeExpenseDonutData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
+              ))}
+              <Label
+                content={({ viewBox }) => {
+                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                    const cx = viewBox.cx as number;
+                    const cy = viewBox.cy as number;
+                    return (
+                      <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
+                        <tspan x={cx} y={cy} className="fill-foreground font-bold" fontSize="20">
+                          ৳{balance.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        </tspan>
+                        <tspan x={cx} y={(cy ?? 0) + 20} className="fill-muted-foreground" fontSize="11">
+                          Balance
+                        </tspan>
+                      </text>
+                    );
+                  }
+                  return null;
+                }}
               />
-              <Pie
-                data={incomeExpenseDonutData}
-                dataKey="value"
-                nameKey="name"
-                innerRadius="55%"
-                outerRadius="90%"
-                strokeWidth={2}
-                stroke="var(--card)"
-                paddingAngle={2}
-              >
-                {incomeExpenseDonutData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-                <Label
-                  content={({ viewBox }) => {
-                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                      const cx = viewBox.cx as number;
-                      const cy = viewBox.cy as number;
-                      return (
-                        <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
-                          <tspan x={cx} y={cy} className="fill-foreground text-2xl font-bold">
-                            ৳{balance.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                          </tspan>
-                          <tspan x={cx} y={(cy ?? 0) + 22} className="fill-muted-foreground text-sm">
-                            Balance
-                          </tspan>
-                        </text>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 }

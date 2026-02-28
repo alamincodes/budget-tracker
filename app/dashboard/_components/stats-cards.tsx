@@ -1,5 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowDownIcon, ArrowUpIcon, DollarSign, PiggyBank } from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, TrendingUp, Wallet } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface StatsCardsProps {
@@ -15,16 +14,12 @@ interface StatsCardsProps {
 export default function StatsCards({ summary, isLoading }: StatsCardsProps) {
   if (isLoading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
-          <Card key={i} className="overflow-hidden rounded-2xl border-0 shadow-sm">
-            <CardHeader className="pb-2">
-              <Skeleton className="h-4 w-24" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-28" />
-            </CardContent>
-          </Card>
+          <div key={i} className="rounded-2xl border border-border bg-card p-4">
+            <Skeleton className="h-3.5 w-20 mb-3" />
+            <Skeleton className="h-7 w-24" />
+          </div>
         ))}
       </div>
     );
@@ -41,53 +36,56 @@ export default function StatsCards({ summary, isLoading }: StatsCardsProps) {
 
   const cards = [
     {
-      title: "Total Income",
+      title: "Income",
       value: formatCurrency(summary.income),
       icon: ArrowUpIcon,
-      className: "text-[var(--income)]",
+      iconColor: "text-[var(--income)]",
       iconBg: "bg-[var(--income)]/10",
+      valueColor: "text-[var(--income)]",
     },
     {
-      title: "Total Expense",
+      title: "Expense",
       value: formatCurrency(summary.expense),
       icon: ArrowDownIcon,
-      className: "text-[var(--expense)]",
+      iconColor: "text-[var(--expense)]",
       iconBg: "bg-[var(--expense)]/10",
+      valueColor: "text-[var(--expense)]",
     },
     {
       title: "Balance",
       value: formatCurrency(summary.balance),
-      icon: DollarSign,
-      className: "bg-primary text-primary-foreground border-0 shadow-lg shadow-primary/20",
-      iconBg: "bg-white/20",
-      invert: true,
+      icon: Wallet,
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
+      valueColor: summary.balance >= 0 ? "text-foreground" : "text-[var(--expense)]",
     },
     {
       title: "Savings Rate",
       value: `${summary.savingsRate.toFixed(1)}%`,
-      icon: PiggyBank,
-      className: "text-foreground",
-      iconBg: "bg-primary/10 text-primary",
+      icon: TrendingUp,
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
+      valueColor: "text-foreground",
     },
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {cards.map(({ title, value, icon: Icon, className, iconBg, invert }) => (
-        <Card
+    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      {cards.map(({ title, value, icon: Icon, iconColor, iconBg, valueColor }) => (
+        <div
           key={title}
-          className={`overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-md ${className}`}
+          className="rounded-2xl border border-border bg-card p-4"
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium opacity-90">{title}</CardTitle>
-            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg}`}>
-              <Icon className="h-5 w-5" />
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-muted-foreground">{title}</span>
+            <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${iconBg}`}>
+              <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold tabular-nums ${invert ? "" : ""}`}>{value}</div>
-          </CardContent>
-        </Card>
+          </div>
+          <p className={`text-xl font-bold tabular-nums tracking-tight ${valueColor}`}>
+            {value}
+          </p>
+        </div>
       ))}
     </div>
   );

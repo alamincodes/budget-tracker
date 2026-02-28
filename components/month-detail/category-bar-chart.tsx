@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart,
   Bar,
@@ -13,9 +12,10 @@ import {
 import type { CategoryChartDatum } from "@/lib/chart-utils";
 
 const tooltipStyle = {
-  borderRadius: "12px",
-  border: "none",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+  borderRadius: "10px",
+  border: "1px solid var(--border)",
+  boxShadow: "none",
+  fontSize: "12px",
 };
 
 interface CategoryBarChartProps {
@@ -39,31 +39,25 @@ export default function CategoryBarChart({
 
   if (!hasData) {
     return (
-      <Card className="rounded-2xl border shadow-sm">
-        <CardHeader>
-          <CardTitle className={`text-lg font-semibold ${titleClassName ?? ""}`}>
-            {title}
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
-        </CardHeader>
-        <CardContent className="h-[280px]">
-          <div className="flex h-full items-center justify-center rounded-xl bg-muted/50 text-muted-foreground text-sm">
-            {emptyMessage}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <p className={`text-sm font-semibold text-foreground mb-0.5 ${titleClassName ?? ""}`}>
+          {title}
+        </p>
+        <p className="text-xs text-muted-foreground mb-4">{subtitle}</p>
+        <div className="flex h-[200px] items-center justify-center rounded-xl bg-muted text-sm text-muted-foreground">
+          {emptyMessage}
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="rounded-2xl border shadow-sm">
-      <CardHeader>
-        <CardTitle className={`text-lg font-semibold ${titleClassName ?? ""}`}>
-          {title}
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">{subtitle}</p>
-      </CardHeader>
-      <CardContent className="h-[280px]">
+    <div className="rounded-2xl border border-border bg-card p-4">
+      <p className={`text-sm font-semibold text-foreground mb-0.5 ${titleClassName ?? ""}`}>
+        {title}
+      </p>
+      <p className="text-xs text-muted-foreground mb-4">{subtitle}</p>
+      <div className="h-[240px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data}
@@ -73,11 +67,11 @@ export default function CategoryBarChart({
             <YAxis
               dataKey="name"
               type="category"
-              width={100}
+              width={96}
               tickLine={false}
-              tickMargin={10}
+              tickMargin={8}
               axisLine={false}
-              tick={{ fontSize: 12 }}
+              tick={{ fontSize: 11 }}
               tickFormatter={(name) => (name ? name : "")}
             />
             <XAxis dataKey="value" type="number" hide />
@@ -86,7 +80,7 @@ export default function CategoryBarChart({
               formatter={(value: number | undefined) => [`৳${(value ?? 0).toLocaleString()}`, ""]}
               contentStyle={tooltipStyle}
             />
-            <Bar dataKey="value" radius={5} fill={defaultBarColor}>
+            <Bar dataKey="value" radius={4} fill={defaultBarColor}>
               {data.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
@@ -96,7 +90,7 @@ export default function CategoryBarChart({
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

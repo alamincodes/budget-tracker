@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import CategoryChip from "./category-chip";
 import type { ICategory } from "@/models/Category";
@@ -21,30 +20,31 @@ export default function CategoriesSection({
   emptyMessage,
 }: CategoriesSectionProps) {
   return (
-    <Card className="rounded-2xl border shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Icon className="h-5 w-5" />
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      <div className="flex items-center gap-2.5 px-4 py-4 border-b border-border">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted">
+          <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+        <span className="ml-auto text-xs text-muted-foreground">{categories.length}</span>
+      </div>
+      <div className="p-3">
         {isLoading ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-14 rounded-xl" />
+              <Skeleton key={i} className="h-12 rounded-xl" />
             ))}
           </div>
         ) : categories.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+          <p className="px-1 py-4 text-sm text-muted-foreground">{emptyMessage}</p>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             {categories.map((cat) => (
               <CategoryChip key={String(cat._id)} category={cat} />
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

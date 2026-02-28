@@ -70,7 +70,7 @@ export function DateFilterPicker({
         type="button"
         variant="outline"
         className={cn(
-          "h-10 min-w-[200px] justify-between gap-2 rounded-xl font-normal shadow-sm"
+          "h-10 min-w-[160px] justify-between gap-2 rounded-xl font-normal text-sm"
         )}
         onClick={() => setExpanded((e) => !e)}
         aria-expanded={expanded}
@@ -91,7 +91,7 @@ export function DateFilterPicker({
             onClick={() => setExpanded(false)}
           />
           <div
-            className="absolute top-full left-0 z-50 mt-2 w-[360px] rounded-2xl border bg-popover p-4 shadow-xl"
+            className="absolute top-full left-0 z-50 mt-2 w-[320px] rounded-2xl border border-border bg-popover p-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="space-y-4">

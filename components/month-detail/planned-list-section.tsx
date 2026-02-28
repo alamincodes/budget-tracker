@@ -1,15 +1,15 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlannedItemWithCategory } from "@/hooks/usePlannedItems";
 import { cn } from "@/lib/utils";
 import {
   CheckCircle2,
-  Circle,
+  Check,
   Undo2,
   Trash2,
   ListTodo,
+  Loader2,
 } from "lucide-react";
 import AddPlannedItemDialog from "./add-planned-item-dialog";
 import { motion, AnimatePresence } from "framer-motion";
@@ -53,72 +53,70 @@ export default function PlannedListSection({
   const done = items.filter((i) => i.status === "done");
 
   return (
-    <Card className="overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-primary/5 shadow-sm">
-      <CardHeader className="pb-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <ListTodo className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle className="text-lg font-semibold tracking-tight">
-                This month&apos;s list
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Plan income & expenses — mark done when they hit
-              </p>
-            </div>
+    <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3 px-4 py-3.5 border-b border-border">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+            <ListTodo className="h-3.5 w-3.5 text-primary" />
           </div>
-          <AddPlannedItemDialog
-            year={year}
-            month={month}
-            onCreate={onCreate}
-            isPending={createPending}
-          />
+          <div>
+            <p className="text-sm font-semibold leading-tight text-foreground">Month checklist</p>
+            <p className="text-[11px] text-muted-foreground leading-tight">
+              {items.length === 0
+                ? "Plan income & expenses"
+                : `${pending.length} pending · ${done.length} done`}
+            </p>
+          </div>
         </div>
-      </CardHeader>
-      <CardContent className="pt-0">
+        <AddPlannedItemDialog
+          year={year}
+          month={month}
+          onCreate={onCreate}
+          isPending={createPending}
+        />
+      </div>
+
+      {/* Body */}
+      <div className="p-3">
         {isLoading ? (
-          <div className="flex flex-col gap-2 py-6">
+          <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-16 rounded-xl bg-muted/50 animate-pulse"
-              />
+              <div key={i} className="h-[52px] rounded-xl bg-muted animate-pulse" />
             ))}
           </div>
         ) : items.length === 0 ? (
-          <div className="rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/30 py-12 text-center">
-            <ListTodo className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
-            <p className="text-sm font-medium text-muted-foreground">
-              No items yet
+          <div className="flex flex-col items-center py-9 text-center">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
+              <ListTodo className="h-6 w-6 text-muted-foreground/50" />
+            </div>
+            <p className="text-sm font-medium text-foreground">Nothing planned yet</p>
+            <p className="mt-1 text-xs text-muted-foreground max-w-[220px]">
+              Add salary, bills or subscriptions to track this month
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Add salary, bills, subscriptions to track this month
-            </p>
-            <AddPlannedItemDialog
-              year={year}
-              month={month}
-              onCreate={onCreate}
-              isPending={createPending}
-              triggerClassName="mt-4"
-            />
+            <div className="mt-4">
+              <AddPlannedItemDialog
+                year={year}
+                month={month}
+                onCreate={onCreate}
+                isPending={createPending}
+              />
+            </div>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <AnimatePresence mode="popLayout">
               {pending.length > 0 && (
                 <motion.div
                   key="pending"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                 >
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Pending
+                  <p className="mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Pending · {pending.length}
                   </p>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1.5">
                     {pending.map((item) => (
                       <PlannedItemRow
                         key={String(item._id)}
@@ -131,18 +129,18 @@ export default function PlannedListSection({
                   </ul>
                 </motion.div>
               )}
+
               {done.length > 0 && (
                 <motion.div
                   key="done"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                 >
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Done
+                  <p className="mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Completed · {done.length}
                   </p>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1.5">
                     {done.map((item) => (
                       <PlannedItemRow
                         key={String(item._id)}
@@ -159,8 +157,8 @@ export default function PlannedListSection({
             </AnimatePresence>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -183,89 +181,103 @@ function PlannedItemRow({
 }) {
   const cat = item.categoryId as { name?: string; color?: string };
   const id = String(item._id);
+  const isIncome = item.type === "income";
 
   return (
     <motion.li
       layout
-      initial={{ opacity: 0, y: -8 }}
+      initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.2 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.15 }}
       className={cn(
-        "group flex items-center gap-4 rounded-xl border bg-card px-4 py-3 transition-colors",
-        isDone && "border-primary/20 bg-primary/5 opacity-90"
+        "flex items-center gap-2.5 rounded-xl border border-border bg-background px-3 py-2.5",
+        isDone && "opacity-60"
       )}
     >
+      {/* Category dot */}
       <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-sm"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold text-white"
         style={{ backgroundColor: cat?.color || "var(--muted-foreground)" }}
       >
         {cat?.name?.[0]?.toUpperCase() ?? "?"}
       </div>
+
+      {/* Text */}
       <div className="min-w-0 flex-1">
         <p
           className={cn(
-            "truncate font-medium",
-            isDone && "text-muted-foreground line-through"
+            "truncate text-[13px] font-medium leading-tight text-foreground",
+            isDone && "line-through text-muted-foreground"
           )}
         >
           {item.title}
         </p>
-        <p className="truncate text-xs text-muted-foreground">
+        <p className="truncate text-[11px] text-muted-foreground leading-tight">
           {cat?.name ?? "Uncategorized"}
           {item.note ? ` · ${item.note}` : ""}
         </p>
       </div>
-      <div
+
+      {/* Amount */}
+      <span
         className={cn(
-          "shrink-0 text-right font-semibold tabular-nums",
-          item.type === "income" ? "text-[var(--income)]" : "text-[var(--expense)]"
+          "shrink-0 text-[13px] font-semibold tabular-nums",
+          isIncome ? "text-[var(--income)]" : "text-[var(--expense)]"
         )}
       >
-        {item.type === "income" ? "+" : "−"}৳{item.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-      </div>
+        {isIncome ? "+" : "−"}৳{item.amount.toLocaleString()}
+      </span>
+
+      {/* Actions — always visible */}
       <div className="flex shrink-0 items-center gap-1">
+        {/* Trash — always visible */}
+        <button
+          onClick={() => onDelete(id)}
+          aria-label="Delete"
+          className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+
         {isDone ? (
-          <>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="rounded-lg text-muted-foreground hover:text-foreground"
-              onClick={() => onUndo?.(id)}
-              disabled={isUndoPending}
-              aria-label="Undo"
-            >
-              <Undo2 className="h-4 w-4" />
-            </Button>
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Done
-            </span>
-          </>
+          /* Undo button */
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 gap-1 rounded-lg px-2 text-[11px] text-muted-foreground hover:text-foreground"
+            onClick={() => onUndo?.(id)}
+            disabled={isUndoPending}
+          >
+            {isUndoPending ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Undo2 className="h-3 w-3" />
+            )}
+            Undo
+          </Button>
         ) : (
-          <div className="relative flex items-center overflow-hidden pl-9">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="absolute left-0 top-1/2 z-10 -translate-y-1/2 -translate-x-full rounded-lg text-muted-foreground transition-transform duration-200 group-hover:translate-x-0 hover:text-destructive"
-              onClick={() => onDelete(id)}
-              aria-label="Remove from list"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              className="rounded-lg gap-1.5 font-medium shrink-0 transition-transform duration-200 group-hover:-translate-x-9"
-              onClick={() => onMarkDone?.(id)}
-              disabled={isMarkDonePending}
-            >
-              <Circle className="h-4 w-4" />
-              Mark done
-            </Button>
-          </div>
+          /* Mark done button */
+          <Button
+            size="sm"
+            className="h-7 gap-1 rounded-lg px-2.5 text-[11px] font-semibold"
+            onClick={() => onMarkDone?.(id)}
+            disabled={isMarkDonePending}
+          >
+            {isMarkDonePending ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Check className="h-3 w-3" />
+            )}
+            Done
+          </Button>
         )}
       </div>
+
+      {/* Done badge overlaid on right edge */}
+      {isDone && (
+        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" />
+      )}
     </motion.li>
   );
 }

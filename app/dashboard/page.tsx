@@ -18,46 +18,58 @@ const currentYear = () => new Date().getFullYear();
 
 export default function DashboardPage() {
   const [filterState, setFilterState] = useState<DateFilterState>(
-    getDefaultDateFilterState()
+    getDefaultDateFilterState(),
   );
-  const range = useMemo(() => getDateRangeFromFilter(filterState), [filterState]);
+  const range = useMemo(
+    () => getDateRangeFromFilter(filterState),
+    [filterState],
+  );
   const filters = useMemo(
     () => (range ? { from: range.from, to: range.to } : {}),
-    [range]
+    [range],
   );
   const displayYear =
-    filterState.preset === 'specific_year' && filterState.specificYear != null
+    filterState.preset === "specific_year" && filterState.specificYear != null
       ? filterState.specificYear
       : currentYear();
-  const { summary, yearOverview, isLoading } = useDashboard({ filters, year: displayYear });
+  const { summary, yearOverview, isLoading } = useDashboard({
+    filters,
+    year: displayYear,
+  });
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl space-y-10">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <main className="flex-1 container mx-auto px-4 pt-6 pb-24 sm:pb-10 max-w-6xl space-y-6">
+        <div className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              Dashboard
+            <h1 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
+              Overview
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Overview of your finances
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Track your finances
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <DateFilterPicker
-              value={filterState}
-              onChange={setFilterState}
-            />
-            <CreateCategoryDialog />
-            <AddTransactionDialog />
+          <div className="flex items-center gap-2">
+            <DateFilterPicker value={filterState} onChange={setFilterState} />
+            <div className="hidden sm:flex items-center gap-2">
+              <CreateCategoryDialog />
+              <AddTransactionDialog />
+            </div>
           </div>
         </div>
 
         <StatsCards
-          summary={summary || { income: 0, expense: 0, balance: 0, savingsRate: 0 }}
+          summary={
+            summary || { income: 0, expense: 0, balance: 0, savingsRate: 0 }
+          }
           isLoading={isLoading}
         />
+
+        <div className="sm:hidden grid grid-cols-2 gap-2">
+          <CreateCategoryDialog triggerClassName="w-full justify-center" />
+          <AddTransactionDialog triggerClassName="w-full justify-center" />
+        </div>
 
         <YearOverview
           data={yearOverview || []}

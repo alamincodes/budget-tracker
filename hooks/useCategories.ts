@@ -8,9 +8,7 @@ export function useCategories() {
     queryKey: ['categories'],
     queryFn: async () => {
       const res = await fetch('/api/categories');
-      if (!res.ok) {
-        throw new Error('Failed to fetch categories');
-      }
+      if (!res.ok) throw new Error('Failed to fetch categories');
       return res.json();
     },
   });
@@ -19,14 +17,10 @@ export function useCategories() {
     mutationFn: async (newCategory: Partial<ICategory>) => {
       const res = await fetch('/api/categories', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCategory),
       });
-      if (!res.ok) {
-        throw new Error('Failed to create category');
-      }
+      if (!res.ok) throw new Error('Failed to create category');
       return res.json();
     },
     onMutate: async (newCategory) => {
@@ -57,10 +51,65 @@ export function useCategories() {
     },
   });
 
+  const updateCategory = useMutation({
+    mutationFn: async ({ id, ...data }: Partial<ICategory> & { id: string }) => {
+      const res = await fetch(`/api/categories/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update category');
+      return res.json();
+    },
+    onMutate: async ({ id, ...data }) => {
+      await queryClient.cancelQueries({ queryKey: ['categories'] });
+      const previous = queryClient.getQueryData<ICategory[]>(['categories']);
+      queryClient.setQueryData<ICategory[]>(['categories'], (old) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (old ?? []).map((c) => (String(c._id) === id ? { ...c, ...data } as any : c))
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous != null) {
+        queryClient.setQueryData(['categories'], context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    },
+  });
+
+  const deleteCategory = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete category');
+      return res.json();
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['categories'] });
+      const previous = queryClient.getQueryData<ICategory[]>(['categories']);
+      queryClient.setQueryData<ICategory[]>(['categories'], (old) =>
+        (old ?? []).filter((c) => String(c._id) !== id)
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous != null) {
+        queryClient.setQueryData(['categories'], context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    },
+  });
+
   return {
     categories,
     isLoading,
     error,
     createCategory,
+    updateCategory,
+    deleteCategory,
   };
 }

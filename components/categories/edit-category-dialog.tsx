@@ -13,57 +13,73 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCategories } from "@/hooks/useCategories";
 import { CATEGORY_COLORS } from "@/lib/category-options";
-import { FolderPlus } from "lucide-react";
+import type { ICategory } from "@/models/Category";
+import { Pencil } from "lucide-react";
 
-export default function CreateCategoryDialog({ triggerClassName }: { triggerClassName?: string } = {}) {
+interface EditCategoryDialogProps {
+  category: ICategory;
+}
+
+export default function EditCategoryDialog({ category }: EditCategoryDialogProps) {
   const [open, setOpen] = useState(false);
-  const { createCategory } = useCategories();
-  const [name, setName] = useState("");
-  const [type, setType] = useState<"income" | "expense">("expense");
-  const [color, setColor] = useState(CATEGORY_COLORS[2]);
-  const reset = () => {
-    setName("");
-    setType("expense");
-    setColor(CATEGORY_COLORS[2]);
+  const { updateCategory } = useCategories();
+
+  const [name, setName] = useState(category.name);
+  const [type, setType] = useState<"income" | "expense">(category.type as "income" | "expense");
+  const [color, setColor] = useState(category.color);
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next) {
+      setName(category.name);
+      setType(category.type as "income" | "expense");
+      setColor(category.color);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
     try {
-      await createCategory.mutateAsync({ name: name.trim(), type, color, icon: "Circle" });
+      await updateCategory.mutateAsync({
+        id: String(category._id),
+        name: name.trim(),
+        type,
+        color,
+      });
       setOpen(false);
-      reset();
     } catch {
       // handled by mutation
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className={`h-10 rounded-xl gap-2 text-sm${triggerClassName ? ` ${triggerClassName}` : ""}`}>
-          <FolderPlus className="h-4 w-4" />
-          New category
-        </Button>
+        <button
+          aria-label="Edit category"
+          className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
       </DialogTrigger>
 
-      <DialogContent className="p-0 sm:max-w-[400px]">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto p-0 sm:max-w-[400px]">
         <DialogHeader className="px-5 pt-5 pb-2">
           <div className="flex items-center gap-3">
             <div
               className="h-9 w-9 rounded-xl shrink-0"
               style={{ backgroundColor: color }}
             />
-            <DialogTitle className="text-base font-semibold">New category</DialogTitle>
+            <DialogTitle className="text-base font-semibold">Edit category</DialogTitle>
           </div>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 px-5 pb-5">
           <div className="space-y-1.5">
-            <Label htmlFor="cat-name" className="text-xs font-medium text-muted-foreground">Name</Label>
+            <Label htmlFor="edit-cat-name" className="text-xs font-medium text-muted-foreground">Name</Label>
             <Input
-              id="cat-name"
+              id="edit-cat-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Groceries"
@@ -118,9 +134,9 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
           <Button
             type="submit"
             className="h-10 w-full rounded-xl font-medium text-sm"
-            disabled={createCategory.isPending}
+            disabled={updateCategory.isPending}
           >
-            {createCategory.isPending ? "Creating…" : "Create category"}
+            {updateCategory.isPending ? "Saving…" : "Save changes"}
           </Button>
         </form>
       </DialogContent>

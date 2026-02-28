@@ -62,26 +62,31 @@ export default function MonthPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl space-y-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
+      <main className="flex-1 container mx-auto px-4 pt-5 pb-24 sm:pb-10 max-w-6xl space-y-4">
+
+        {/* Page header */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 rounded-xl shrink-0"
+              className="h-8 w-8 rounded-lg shrink-0"
               onClick={() => router.push("/dashboard")}
               aria-label="Back to dashboard"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{dateLabel}</h1>
-              <p className="text-sm text-muted-foreground">Income vs expenses and transactions</p>
+              <h1 className="text-[15px] font-bold tracking-tight text-foreground leading-tight">
+                {dateLabel}
+              </h1>
+              <p className="text-[11px] text-muted-foreground">Monthly summary</p>
             </div>
           </div>
           <AddTransactionDialog defaultYear={year} defaultMonth={month} />
         </div>
 
+        {/* Planned checklist */}
         <PlannedListSection
           year={year}
           month={month}
@@ -96,10 +101,11 @@ export default function MonthPage() {
           undoPendingId={undoId}
         />
 
+        {/* Charts + Transactions */}
         {isLoading ? (
-          <div className="space-y-6">
-            <div className="h-80 rounded-2xl bg-muted/50 animate-pulse" />
-            <div className="h-96 rounded-2xl bg-muted/50 animate-pulse" />
+          <div className="space-y-3">
+            <div className="h-[320px] rounded-2xl bg-muted animate-pulse" />
+            <div className="h-[200px] rounded-2xl bg-muted animate-pulse" />
           </div>
         ) : (
           <>
