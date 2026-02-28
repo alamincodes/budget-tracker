@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,14 +20,13 @@ import {
 import { DatePickerInputString, toDateString } from "@/components/ui/date-picker-input";
 import { useCategories } from "@/hooks/useCategories";
 import { useTransactions, TransactionWithCategory } from "@/hooks/useTransactions";
-import { Pencil } from "lucide-react";
-
 interface EditTransactionDialogProps {
   transaction: TransactionWithCategory;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export default function EditTransactionDialog({ transaction }: EditTransactionDialogProps) {
-  const [open, setOpen] = useState(false);
+export default function EditTransactionDialog({ transaction, open, onOpenChange }: EditTransactionDialogProps) {
   const { categories } = useCategories();
   const { updateTransaction } = useTransactions({});
 
@@ -39,7 +37,7 @@ export default function EditTransactionDialog({ transaction }: EditTransactionDi
   const [date, setDate] = useState(toDateString(new Date(transaction.date)));
 
   const handleOpenChange = (next: boolean) => {
-    setOpen(next);
+    onOpenChange(next);
     if (next) {
       setAmount(String(transaction.amount));
       setType(transaction.type as "income" | "expense");
@@ -60,22 +58,13 @@ export default function EditTransactionDialog({ transaction }: EditTransactionDi
       note,
       date: new Date(date),
     });
-    setOpen(false);
+    onOpenChange(false);
   };
 
   const filteredCategories = categories?.filter((c) => c.type === type) ?? [];
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <button
-          aria-label="Edit transaction"
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </button>
-      </DialogTrigger>
-
       <DialogContent className="p-0 sm:max-w-[420px]">
         <DialogHeader className="px-5 pt-5 pb-2">
           <DialogTitle className="text-base font-semibold">Edit transaction</DialogTitle>

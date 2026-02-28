@@ -1,6 +1,5 @@
 "use client";
 
-import Header from "../_components/header";
 import CreateCategoryDialog from "../_components/create-category-dialog";
 import { useCategories } from "@/hooks/useCategories";
 import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
@@ -18,7 +17,6 @@ export default function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
       <main className="flex-1 container mx-auto px-4 pt-6 pb-24 sm:pb-10 max-w-6xl space-y-5">
         <div className="flex items-center justify-between gap-3">
           <div>

@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,14 +13,14 @@ import { Label } from "@/components/ui/label";
 import { useCategories } from "@/hooks/useCategories";
 import { CATEGORY_COLORS } from "@/lib/category-options";
 import type { ICategory } from "@/models/Category";
-import { Pencil } from "lucide-react";
 
 interface EditCategoryDialogProps {
   category: ICategory;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export default function EditCategoryDialog({ category }: EditCategoryDialogProps) {
-  const [open, setOpen] = useState(false);
+export default function EditCategoryDialog({ category, open, onOpenChange }: EditCategoryDialogProps) {
   const { updateCategory } = useCategories();
 
   const [name, setName] = useState(category.name);
@@ -29,7 +28,7 @@ export default function EditCategoryDialog({ category }: EditCategoryDialogProps
   const [color, setColor] = useState(category.color);
 
   const handleOpenChange = (next: boolean) => {
-    setOpen(next);
+    onOpenChange(next);
     if (next) {
       setName(category.name);
       setType(category.type as "income" | "expense");
@@ -47,7 +46,7 @@ export default function EditCategoryDialog({ category }: EditCategoryDialogProps
         type,
         color,
       });
-      setOpen(false);
+      onOpenChange(false);
     } catch {
       // handled by mutation
     }
@@ -55,15 +54,6 @@ export default function EditCategoryDialog({ category }: EditCategoryDialogProps
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <button
-          aria-label="Edit category"
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </button>
-      </DialogTrigger>
-
       <DialogContent className="max-h-[90dvh] overflow-y-auto p-0 sm:max-w-[400px]">
         <DialogHeader className="px-5 pt-5 pb-2">
           <div className="flex items-center gap-3">

@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import StatsCards from "./_components/stats-cards";
 import YearOverview from "./_components/year-overview";
-import Header from "./_components/header";
 import AddTransactionDialog from "./_components/add-transaction-dialog";
 import { DateFilterPicker } from "./_components/date-filter-picker";
 import CreateCategoryDialog from "./_components/create-category-dialog";
@@ -39,7 +38,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
       <main className="flex-1 container mx-auto px-4 pt-6 pb-24 sm:pb-10 max-w-6xl space-y-6">
         <div className="flex items-center justify-between gap-3">
           <div>

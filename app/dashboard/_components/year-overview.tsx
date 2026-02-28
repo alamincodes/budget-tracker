@@ -85,16 +85,16 @@ export default function YearOverview({
             new Date().getMonth() + 1 === monthData.month;
 
           return (
-            <button
+            <div
               key={monthData.month}
               onClick={() =>
                 router.push(`/dashboard/month/${year}/${monthData.month}`)
               }
               className={cn(
-                "group flex flex-col items-center rounded-2xl border bg-card px-2 py-3 transition-all active:scale-[0.97]",
+                "group flex flex-col items-center rounded-2xl border bg-card px-2 py-3 transition-all active:scale-[0.97] cursor-pointer",
                 isCurrentMonth
-                  ? "border-primary/40 ring-1 ring-primary/20"
-                  : "border-border hover:border-primary/30 hover:bg-accent/20",
+                  ? "border-primary/40 ring-4 ring-primary/20"
+                  : "border-border hover:border-primary/30 hover:bg-accent/20 ",
               )}
             >
               {/* Month label */}
@@ -195,16 +195,16 @@ export default function YearOverview({
 
               {/* Bottom stats */}
               {hasData ? (
-                <div className="mt-2 w-full space-y-0.5">
+                <div className="mt-2 flex justify-between w-full">
                   <div className="flex items-center gap-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-[var(--income)] shrink-0" />
-                    <span className="truncate text-[9px] font-medium text-muted-foreground">
+                    <span className="truncate text-sm font-medium text-muted-foreground">
                       {formatBalanceCompact(monthData.income)}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-[var(--expense)] shrink-0" />
-                    <span className="truncate text-[9px] font-medium text-muted-foreground">
+                    <span className="truncate text-sm font-medium text-muted-foreground">
                       {formatBalanceCompact(monthData.expense)}
                     </span>
                   </div>
@@ -214,7 +214,7 @@ export default function YearOverview({
                   No data
                 </span>
               )}
-            </button>
+            </div>
           );
         })}
       </div>

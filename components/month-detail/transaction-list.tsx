@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { TransactionWithCategory, useTransactions } from "@/hooks/useTransactions";
 import { format } from "date-fns";
-import { Trash2, Loader2 } from "lucide-react";
+import { Trash2, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditTransactionDialog from "./edit-transaction-dialog";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 
 interface TransactionListProps {
   transactions: TransactionWithCategory[];
@@ -13,7 +14,7 @@ interface TransactionListProps {
   month: number;
 }
 
-export default function TransactionList({ transactions, year, month }: TransactionListProps) {
+export default function TransactionList({ transactions }: TransactionListProps) {
   return (
     <div className="rounded-2xl border border-border bg-card overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3.5 border-b border-border">
@@ -36,8 +37,6 @@ export default function TransactionList({ transactions, year, month }: Transacti
               key={String(t._id)}
               transaction={t}
               isLast={idx === transactions.length - 1}
-              year={year}
-              month={month}
             />
           ))
         )}
@@ -49,90 +48,94 @@ export default function TransactionList({ transactions, year, month }: Transacti
 function TransactionRow({
   transaction: t,
   isLast,
-  year,
-  month,
 }: {
   transaction: TransactionWithCategory;
   isLast: boolean;
-  year: number;
-  month: number;
 }) {
   const { deleteTransaction } = useTransactions({});
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const isIncome = t.type === "income";
 
   const handleDelete = () => {
-    if (!confirmDelete) {
-      setConfirmDelete(true);
-      setTimeout(() => setConfirmDelete(false), 3000);
-      return;
-    }
     deleteTransaction.mutate({ id: String(t._id), date: t.date });
-    setConfirmDelete(false);
+    setDeleteOpen(false);
   };
 
   return (
-    <div
-      className={cn(
-        "group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40",
-        !isLast && "border-b border-border"
-      )}
-    >
-      {/* Category avatar */}
+    <>
       <div
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white"
-        style={{ backgroundColor: t.categoryId?.color || "var(--muted-foreground)" }}
-      >
-        {t.categoryId?.name?.[0]?.toUpperCase() ?? "?"}
-      </div>
-
-      {/* Info */}
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">
-          {t.categoryId?.name || "Uncategorized"}
-        </p>
-        <p className="truncate text-xs text-muted-foreground">
-          {format(new Date(t.date), "MMM d, yyyy")}
-          {t.note ? ` · ${t.note}` : ""}
-        </p>
-      </div>
-
-      {/* Amount */}
-      <span
         className={cn(
-          "shrink-0 text-sm font-semibold tabular-nums",
-          isIncome ? "text-[var(--income)]" : "text-[var(--expense)]"
+          "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40",
+          !isLast && "border-b border-border"
         )}
       >
-        {isIncome ? "+" : "−"}৳{t.amount.toLocaleString()}
-      </span>
+        {/* Category avatar */}
+        <div
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white"
+          style={{ backgroundColor: t.categoryId?.color || "var(--muted-foreground)" }}
+        >
+          {t.categoryId?.name?.[0]?.toUpperCase() ?? "?"}
+        </div>
 
-      {/* Actions */}
-      <div className="flex shrink-0 items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <EditTransactionDialog transaction={t} />
+        {/* Info */}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-foreground">
+            {t.categoryId?.name || "Uncategorized"}
+          </p>
+          <p className="truncate text-xs text-muted-foreground">
+            {format(new Date(t.date), "MMM d, yyyy")}
+            {t.note ? ` · ${t.note}` : ""}
+          </p>
+        </div>
 
-        {confirmDelete ? (
+        {/* Amount */}
+        <span
+          className={cn(
+            "shrink-0 text-sm font-semibold tabular-nums",
+            isIncome ? "text-[var(--income)]" : "text-[var(--expense)]"
+          )}
+        >
+          {isIncome ? "+" : "−"}৳{t.amount.toLocaleString()}
+        </span>
+
+        {/* Actions — always visible */}
+        <div className="flex shrink-0 items-center gap-1">
           <button
-            onClick={handleDelete}
-            disabled={deleteTransaction.isPending}
-            className="flex h-7 items-center gap-1 rounded-lg bg-destructive/10 px-2 text-[11px] font-semibold text-destructive transition-colors hover:bg-destructive hover:text-white"
+            onClick={() => setEditOpen(true)}
+            aria-label="Edit transaction"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground"
           >
-            {deleteTransaction.isPending ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              "Confirm?"
-            )}
+            <Pencil className="h-3.5 w-3.5" />
           </button>
-        ) : (
           <button
-            onClick={handleDelete}
+            onClick={() => setDeleteOpen(true)}
             aria-label="Delete transaction"
             className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
-        )}
+        </div>
       </div>
-    </div>
+
+      {/* Edit dialog — controlled externally */}
+      <EditTransactionDialog
+        transaction={t}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
+
+      {/* Delete confirm modal */}
+      <ConfirmModal
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={handleDelete}
+        isPending={deleteTransaction.isPending}
+        title="Delete transaction?"
+        description={`This will permanently remove the ৳${t.amount.toLocaleString()} ${t.type} transaction. This action cannot be undone.`}
+        confirmLabel="Delete"
+        destructive
+      />
+    </>
   );
 }

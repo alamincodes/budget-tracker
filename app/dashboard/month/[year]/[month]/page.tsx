@@ -5,7 +5,6 @@ import { usePlannedItems } from "@/hooks/usePlannedItems";
 import MonthCharts from "../../../../../components/month-detail/month-charts";
 import TransactionList from "../../../../../components/month-detail/transaction-list";
 import PlannedListSection from "../../../../../components/month-detail/planned-list-section";
-import Header from "../../../_components/header";
 import AddTransactionDialog from "../../../_components/add-transaction-dialog";
 import { format } from "date-fns";
 import { Button } from "../../../../../components/ui/button";
@@ -61,7 +60,6 @@ export default function MonthPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
       <main className="flex-1 container mx-auto px-4 pt-5 pb-24 sm:pb-10 max-w-6xl space-y-4">
 
         {/* Page header */}

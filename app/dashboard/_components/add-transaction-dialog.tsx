@@ -20,7 +20,10 @@ import {
 } from "@/components/ui/select";
 import { useCategories } from "@/hooks/useCategories";
 import { useTransactions } from "@/hooks/useTransactions";
-import { DatePickerInputString, toDateString } from "@/components/ui/date-picker-input";
+import {
+  DatePickerInputString,
+  toDateString,
+} from "@/components/ui/date-picker-input";
 import { Plus } from "lucide-react";
 
 export interface AddTransactionDialogProps {
@@ -63,7 +66,9 @@ export default function AddTransactionDialog({
     await createTransaction.mutateAsync({
       amount: parseFloat(amount),
       type,
-      categoryId: categoryId as unknown as Parameters<typeof createTransaction.mutateAsync>[0]["categoryId"],
+      categoryId: categoryId as unknown as Parameters<
+        typeof createTransaction.mutateAsync
+      >[0]["categoryId"],
       note,
       date: new Date(date),
     });
@@ -79,14 +84,18 @@ export default function AddTransactionDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className={`h-10 rounded-xl gap-2 font-medium text-sm${triggerClassName ? ` ${triggerClassName}` : ""}`}>
+        <Button
+          className={`h-10 rounded-xl gap-2 font-medium text-sm${triggerClassName ? ` ${triggerClassName}` : ""}`}
+        >
           <Plus className="h-4 w-4" />
           Add transaction
         </Button>
       </DialogTrigger>
       <DialogContent className="p-0 sm:max-w-[420px]">
         <DialogHeader className="px-5 pt-5 pb-2">
-          <DialogTitle className="text-base font-semibold">Add transaction</DialogTitle>
+          <DialogTitle className="text-base font-semibold">
+            Add transaction
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 px-5 pb-5">
           {/* Type toggle */}
@@ -95,15 +104,24 @@ export default function AddTransactionDialog({
               <button
                 key={t}
                 type="button"
-                onClick={() => { setType(t); setCategoryId(""); }}
-                className="h-10 rounded-xl border text-sm font-semibold transition-colors capitalize"
+                onClick={() => {
+                  setType(t);
+                  setCategoryId("");
+                }}
+                className="h-10 rounded-xl border text-sm font-semibold transition-colors capitalize cursor-pointer"
                 style={{
-                  backgroundColor: type === t
-                    ? t === "income" ? "var(--income)" : "var(--expense)"
-                    : "transparent",
-                  borderColor: type === t
-                    ? t === "income" ? "var(--income)" : "var(--expense)"
-                    : "var(--border)",
+                  backgroundColor:
+                    type === t
+                      ? t === "income"
+                        ? "var(--income)"
+                        : "var(--expense)"
+                      : "transparent",
+                  borderColor:
+                    type === t
+                      ? t === "income"
+                        ? "var(--income)"
+                        : "var(--expense)"
+                      : "var(--border)",
                   color: type === t ? "white" : "var(--muted-foreground)",
                 }}
               >
@@ -113,7 +131,9 @@ export default function AddTransactionDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Amount (৳)</Label>
+            <Label className="text-xs font-medium text-muted-foreground">
+              Amount (৳)
+            </Label>
             <Input
               type="number"
               step="0.01"
@@ -127,7 +147,9 @@ export default function AddTransactionDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Category</Label>
+            <Label className="text-xs font-medium text-muted-foreground">
+              Category
+            </Label>
             <Select value={categoryId} onValueChange={setCategoryId} required>
               <SelectTrigger className="h-10 rounded-xl">
                 <SelectValue placeholder="Select category" />
@@ -155,12 +177,16 @@ export default function AddTransactionDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Date</Label>
+            <Label className="text-xs font-medium text-muted-foreground">
+              Date
+            </Label>
             <DatePickerInputString key={date} value={date} onChange={setDate} />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Note <span className="text-muted-foreground/60">(optional)</span></Label>
+            <Label className="text-xs font-medium text-muted-foreground">
+              Note <span className="text-muted-foreground/60">(optional)</span>
+            </Label>
             <Input
               value={note}
               onChange={(e) => setNote(e.target.value)}
