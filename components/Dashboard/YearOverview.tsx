@@ -10,7 +10,6 @@ import {
   Tooltip,
 } from "recharts";
 import { useRouter } from "next/navigation";
-import { useMonthData } from "@/hooks/useMonthData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatBalanceCompact, MONTH_NAMES_FULL } from "@/lib/utils";
 
@@ -26,7 +25,6 @@ interface YearOverviewProps {
 
 export default function YearOverview({ data, year, isLoading }: YearOverviewProps) {
   const router = useRouter();
-  const { prefetchMonth } = useMonthData(year, 1);
 
   if (isLoading) {
     return (
@@ -53,7 +51,6 @@ export default function YearOverview({ data, year, isLoading }: YearOverviewProp
             { name: "Income", value: monthData.income, fill: "var(--income)" },
             { name: "Expense", value: monthData.expense, fill: "var(--expense)" },
           ].filter((d) => d.value > 0);
-          const total = monthData.income + monthData.expense;
           const balance = monthData.income - monthData.expense;
           const hasData = donutData.length > 0;
 
@@ -62,7 +59,6 @@ export default function YearOverview({ data, year, isLoading }: YearOverviewProp
               key={monthData.month}
               className="cursor-pointer rounded-2xl border shadow-sm transition-all hover:border-primary/30 hover:shadow-md active:scale-[0.99]"
               onClick={() => router.push(`/dashboard/month/${year}/${monthData.month}`)}
-              onMouseEnter={() => prefetchMonth(year, monthData.month)}
             >
               <CardHeader className="pb-1 pt-5">
                 <CardTitle className="text-center text-sm font-semibold text-foreground">

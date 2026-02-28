@@ -5,6 +5,8 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default-secret';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 export async function POST(req: Request) {
   try {
@@ -18,7 +20,18 @@ export async function POST(req: Request) {
       );
     }
 
-    const user = await User.findOne({ email });
+    const normalizedEmail = String(email).trim().toLowerCase();
+    let user = await User.findOne({ email: normalizedEmail });
+
+    // If no user in DB but .env admin credentials match, create the admin user and log in
+    if (!user && ADMIN_EMAIL && ADMIN_PASSWORD && normalizedEmail === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10);
+      user = await User.create({
+        email: ADMIN_EMAIL,
+        password: hashedPassword,
+        role: 'admin',
+      });
+    }
 
     if (!user) {
       return NextResponse.json(
@@ -27,7 +40,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const isMatch = await bcrypt.compare(password, user.password as string);
+    const isMatch =
+      user.password &&
+      (await bcrypt.compare(password, user.password as string));
 
     if (!isMatch) {
       return NextResponse.json(
