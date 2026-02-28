@@ -3,8 +3,7 @@
 import { useMonthData } from "@/hooks/useMonthData";
 import MonthCharts from "@/components/month-detail/month-charts";
 import TransactionList from "@/components/month-detail/transaction-list";
-import Header from "@/components/dashboard/header";
-import AddTransactionDialog from "@/components/dashboard/add-transaction-dialog";
+import { Header, AddTransactionDialog } from "@/components/dashboard";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";

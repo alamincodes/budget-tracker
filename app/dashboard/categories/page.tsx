@@ -1,10 +1,9 @@
 "use client";
 
-import Header from "@/components/dashboard/header";
+import { Header, CreateCategoryDialog } from "@/components/dashboard";
 import { useCategories } from "@/hooks/useCategories";
 import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import Link from "next/link";
-import CreateCategoryDialog from "@/components/dashboard/create-category-dialog";
 import CategoriesSection from "@/components/categories/categories-section";
 
 export default function CategoriesPage() {
