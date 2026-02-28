@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
-import StatsCards from "../../components/dashboard/stats-cards";
-import YearOverview from "../../components/dashboard/year-overview";
-import Header from "../../components/dashboard/header";
-import AddTransactionDialog from "../../components/dashboard/add-transaction-dialog";
-import { DateFilterPicker } from "../../components/dashboard/date-filter-picker";
-import CreateCategoryDialog from "../../components/dashboard/create-category-dialog";
+import StatsCards from "./_components/stats-cards";
+import YearOverview from "./_components/year-overview";
+import Header from "./_components/header";
+import AddTransactionDialog from "./_components/add-transaction-dialog";
+import { DateFilterPicker } from "./_components/date-filter-picker";
+import CreateCategoryDialog from "./_components/create-category-dialog";
 import {
   getDefaultDateFilterState,
   getDateRangeFromFilter,

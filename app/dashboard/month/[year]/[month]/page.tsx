@@ -1,12 +1,12 @@
 "use client";
 
 import { useMonthData } from "@/hooks/useMonthData";
-import MonthCharts from "@/components/month-detail/month-charts";
-import TransactionList from "@/components/month-detail/transaction-list";
-import Header from "../../../../../components/dashboard/header";
-import AddTransactionDialog from "../../../../../components/dashboard/add-transaction-dialog";
+import MonthCharts from "../../../../../components/month-detail/month-charts";
+import TransactionList from "../../../../../components/month-detail/transaction-list";
+import Header from "../../../_components/header";
+import AddTransactionDialog from "../../../_components/add-transaction-dialog";
 import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
+import { Button } from "../../../../../components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 
