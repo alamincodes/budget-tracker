@@ -38,21 +38,23 @@ export async function PATCH(
     const monthIndex = item.month >= 1 && item.month <= 12 ? item.month - 1 : 0;
     const date = new Date(Date.UTC(item.year, monthIndex, 1, 12, 0, 0));
 
-    const transaction = await Transaction.create({
+    const transactionPayload = {
       amount: item.amount,
       type: item.type,
       categoryId: item.categoryId,
       note: item.title + (item.note ? ` · ${item.note}` : ''),
       date,
       userId: user.userId,
-    } as any);
-
-    await PlannedItem.updateOne(
-      { _id: item._id } as any,
-      { $set: { status: 'done', transactionId: transaction._id } }
+    };
+    const transaction = await Transaction.create(
+      transactionPayload as Parameters<typeof Transaction.create>[0]
     );
 
-    const populated = await PlannedItem.findById(item._id).populate(
+    await PlannedItem.findByIdAndUpdate(id, {
+      $set: { status: 'done', transactionId: transaction._id },
+    });
+
+    const populated = await PlannedItem.findById(id).populate(
       'categoryId',
       'name icon color type'
     );
