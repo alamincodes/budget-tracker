@@ -43,7 +43,29 @@ export async function GET(req: Request) {
       if (item._id === 'expense') expense = item.total;
     });
 
-    const balance = income - expense;
+    // Opening balance = balance from all transactions before the range start (e.g. last month's closing).
+    // So "Balance" = last month's balance + (this month income - this month expense).
+    let openingBalance = 0;
+    if (from) {
+      const opening = await Transaction.aggregate([
+        {
+          $match: {
+            userId: new mongoose.Types.ObjectId(user.userId),
+            date: { $lt: new Date(from) },
+          },
+        },
+        { $group: { _id: '$type', total: { $sum: '$amount' } } },
+      ]);
+      let openIncome = 0;
+      let openExpense = 0;
+      opening.forEach((item: { _id: string; total: number }) => {
+        if (item._id === 'income') openIncome = item.total;
+        if (item._id === 'expense') openExpense = item.total;
+      });
+      openingBalance = openIncome - openExpense;
+    }
+
+    const balance = openingBalance + (income - expense);
     const savingsRate = income > 0 ? ((income - expense) / income) * 100 : 0;
 
     return NextResponse.json({
