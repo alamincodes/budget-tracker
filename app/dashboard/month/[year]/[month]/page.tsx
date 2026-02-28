@@ -1,23 +1,52 @@
 "use client";
 
 import { useMonthData } from "@/hooks/useMonthData";
+import { usePlannedItems } from "@/hooks/usePlannedItems";
 import MonthCharts from "../../../../../components/month-detail/month-charts";
 import TransactionList from "../../../../../components/month-detail/transaction-list";
+import PlannedListSection from "../../../../../components/month-detail/planned-list-section";
 import Header from "../../../_components/header";
 import AddTransactionDialog from "../../../_components/add-transaction-dialog";
 import { format } from "date-fns";
 import { Button } from "../../../../../components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
+import { useState } from "react";
 
 export default function MonthPage() {
   const params = useParams();
   const router = useRouter();
 
   const year = parseInt(params.year as string);
-  const month = parseInt(params.month as string);
+  const rawMonth = parseInt(params.month as string);
+  const month = Math.min(12, Math.max(1, isNaN(rawMonth) ? new Date().getMonth() + 1 : rawMonth));
 
   const { transactions, isLoading } = useMonthData(year, month);
+  const {
+    items: plannedItems,
+    isLoading: plannedLoading,
+    createItem,
+    markDone,
+    undo,
+    deleteItem,
+  } = usePlannedItems(year, month);
+
+  const [markDoneId, setMarkDoneId] = useState<string | null>(null);
+  const [undoId, setUndoId] = useState<string | null>(null);
+
+  const handleMarkDone = (id: string) => {
+    setMarkDoneId(id);
+    markDone.mutate(id, {
+      onSettled: () => setMarkDoneId(null),
+    });
+  };
+
+  const handleUndo = (id: string) => {
+    setUndoId(id);
+    undo.mutate(id, {
+      onSettled: () => setUndoId(null),
+    });
+  };
 
   if (isNaN(year) || isNaN(month)) {
     return (
@@ -52,6 +81,20 @@ export default function MonthPage() {
           </div>
           <AddTransactionDialog defaultYear={year} defaultMonth={month} />
         </div>
+
+        <PlannedListSection
+          year={year}
+          month={month}
+          items={plannedItems}
+          isLoading={plannedLoading}
+          onCreate={(body) => createItem.mutateAsync(body)}
+          createPending={createItem.isPending}
+          onMarkDone={handleMarkDone}
+          onUndo={handleUndo}
+          onDelete={(id) => deleteItem.mutate(id)}
+          markDonePendingId={markDoneId}
+          undoPendingId={undoId}
+        />
 
         {isLoading ? (
           <div className="space-y-6">

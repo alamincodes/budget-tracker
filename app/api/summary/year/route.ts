@@ -15,20 +15,28 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString());
 
-    const startDate = new Date(year, 0, 1);
-    const endDate = new Date(year, 11, 31, 23, 59, 59);
+    // Use Asia/Dhaka so "January" is the same everywhere (Dec 31 18:00 UTC = Jan 1 in Dhaka).
+    const tz = 'Asia/Dhaka';
+    const startOfYearTz = new Date(Date.UTC(year - 1, 11, 31, 18, 0, 0, 0)); // Jan 1 00:00 Dhaka
+    const endOfYearTz = new Date(Date.UTC(year, 11, 31, 17, 59, 59, 999));   // Dec 31 23:59:59 Dhaka
 
     const summary = await Transaction.aggregate([
       {
         $match: {
           userId: new mongoose.Types.ObjectId(user.userId),
-          date: { $gte: startDate, $lte: endDate },
+          date: { $gte: startOfYearTz, $lte: endOfYearTz },
         },
       },
       {
+        $addFields: {
+          parts: { $dateToParts: { date: '$date', timezone: tz } },
+        },
+      },
+      { $match: { 'parts.year': year } },
+      {
         $group: {
           _id: {
-            month: { $month: '$date' },
+            month: '$parts.month',
             type: '$type',
           },
           total: { $sum: '$amount' },
