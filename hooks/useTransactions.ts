@@ -99,10 +99,78 @@ export function useTransactions(filters: TransactionFilters) {
     },
   });
 
+  const invalidateAll = (date?: string | Date) => {
+    queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    queryClient.invalidateQueries({ queryKey: ['summary'] });
+    queryClient.invalidateQueries({ queryKey: ['year-overview'] });
+    if (date) {
+      const d = new Date(date);
+      if (!isNaN(d.getTime())) {
+        queryClient.invalidateQueries({ queryKey: ['month', d.getFullYear(), d.getMonth() + 1] });
+      }
+    }
+  };
+
+  const updateTransaction = useMutation({
+    mutationFn: async ({ id, ...data }: Partial<ITransaction> & { id: string }) => {
+      const res = await fetch(`/api/transactions/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update transaction');
+      return res.json();
+    },
+    onMutate: async ({ id, ...data }) => {
+      await queryClient.cancelQueries({ queryKey: ['transactions'] });
+      const previous = queryClient.getQueryData<TransactionWithCategory[]>(['transactions', filters]);
+      const categories = queryClient.getQueryData<ICategory[]>(['categories']);
+      const category = data.categoryId
+        ? categories?.find((c) => String(c._id) === String(data.categoryId))
+        : undefined;
+
+      queryClient.setQueryData<TransactionWithCategory[]>(['transactions', filters], (old) =>
+        (old ?? []).map((t) =>
+          String(t._id) === id
+            ? { ...t, ...data, ...(category ? { categoryId: category } : {}) } as TransactionWithCategory
+            : t
+        )
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['transactions', filters], context.previous);
+    },
+    onSuccess: (data) => invalidateAll(data?.date),
+  });
+
+  const deleteTransaction = useMutation({
+    mutationFn: async ({ id }: { id: string; date?: string | Date }) => {
+      const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete transaction');
+      return res.json();
+    },
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: ['transactions'] });
+      const previous = queryClient.getQueryData<TransactionWithCategory[]>(['transactions', filters]);
+      queryClient.setQueryData<TransactionWithCategory[]>(['transactions', filters], (old) =>
+        (old ?? []).filter((t) => String(t._id) !== id)
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['transactions', filters], context.previous);
+    },
+    onSuccess: (_data, vars) => invalidateAll(vars.date),
+  });
+
   return {
     transactions,
     isLoading,
     error,
     createTransaction,
+    updateTransaction,
+    deleteTransaction,
   };
 }

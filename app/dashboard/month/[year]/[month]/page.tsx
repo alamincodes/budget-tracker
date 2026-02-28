@@ -110,7 +110,7 @@ export default function MonthPage() {
         ) : (
           <>
             <MonthCharts transactions={transactions || []} />
-            <TransactionList transactions={transactions || []} />
+            <TransactionList transactions={transactions || []} year={year} month={month} />
           </>
         )}
       </main>
