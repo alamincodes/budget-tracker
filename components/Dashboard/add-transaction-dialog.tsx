@@ -20,112 +20,8 @@ import {
 } from "@/components/ui/select";
 import { useCategories } from "@/hooks/useCategories";
 import { useTransactions } from "@/hooks/useTransactions";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon, Plus } from "lucide-react";
-
-function toDateString(d: Date) {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function formatDisplayDate(date: Date | undefined) {
-  if (!date) return "";
-  return date.toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-}
-
-function isValidDate(date: Date | undefined) {
-  if (!date) return false;
-  return !isNaN(date.getTime());
-}
-
-interface DatePickerInputProps {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-function DatePickerInput({ value, onChange }: DatePickerInputProps) {
-  const [open, setOpen] = useState(false);
-  const dateFromValue = value ? new Date(value) : undefined;
-  const [date, setDate] = useState<Date | undefined>(() => dateFromValue);
-  const [month, setMonth] = useState<Date | undefined>(() => dateFromValue ?? new Date());
-  const [display, setDisplay] = useState(() => formatDisplayDate(dateFromValue));
-
-  const dateToShow = date ?? dateFromValue;
-  const displayToShow = display || formatDisplayDate(dateFromValue);
-
-  return (
-    <div className="flex rounded-xl border border-input bg-transparent shadow-xs overflow-hidden focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]">
-      <Input
-        value={displayToShow}
-        placeholder="June 01, 2025"
-        onChange={(e) => {
-          const v = e.target.value;
-          setDisplay(v);
-          const d = new Date(v);
-          if (isValidDate(d)) {
-            setDate(d);
-            setMonth(d);
-            onChange(toDateString(d));
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowDown") {
-            e.preventDefault();
-            setOpen(true);
-          }
-        }}
-        className="h-11 flex-1 rounded-none border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-      />
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="h-11 w-11 shrink-0 rounded-none border-l border-input"
-            aria-label="Select date"
-          >
-            <CalendarIcon className="h-4 w-4" />
-            <span className="sr-only">Select date</span>
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-auto overflow-hidden rounded-xl border bg-popover p-0 shadow-lg"
-          align="end"
-          alignOffset={-8}
-          sideOffset={10}
-        >
-          <Calendar
-            mode="single"
-            selected={dateToShow}
-            month={month}
-            onMonthChange={setMonth}
-            onSelect={(next) => {
-              setDate(next);
-              if (next) {
-                setMonth(next);
-                setDisplay(formatDisplayDate(next));
-                onChange(toDateString(next));
-              }
-              setOpen(false);
-            }}
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
-}
+import { DatePickerInputString, toDateString } from "@/components/ui/date-picker-input";
+import { Plus } from "lucide-react";
 
 export interface AddTransactionDialogProps {
   /** When on month detail page: pre-fill date with this month (first day) */
@@ -243,7 +139,7 @@ export default function AddTransactionDialog({
 
           <div className="space-y-2">
             <Label>Date</Label>
-            <DatePickerInput key={date} value={date} onChange={setDate} />
+            <DatePickerInputString key={date} value={date} onChange={setDate} />
           </div>
 
           <div className="space-y-2">

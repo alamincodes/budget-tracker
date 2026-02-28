@@ -1,16 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { CalendarIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -25,21 +18,8 @@ import {
   getDateRangeFromFilter,
   getDefaultDateFilterState,
 } from "@/types/filters";
+import { DatePickerInputDate } from "@/components/ui/date-picker-input";
 import { cn } from "@/lib/utils";
-
-function formatDate(date: Date | undefined) {
-  if (!date) return "";
-  return date.toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-}
-
-function isValidDate(date: Date | undefined) {
-  if (!date) return false;
-  return !isNaN(date.getTime());
-}
 
 const PRESETS: { value: FilterPreset; label: string }[] = [
   { value: "daily", label: "Daily" },
@@ -54,90 +34,7 @@ const PRESETS: { value: FilterPreset; label: string }[] = [
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 8 }, (_, i) => CURRENT_YEAR - 5 + i);
 
-interface DatePickerInputProps {
-  value: Date | undefined;
-  onChange: (date: Date | undefined) => void;
-  placeholder?: string;
-  id?: string;
-  onClose?: () => void;
-}
-
-function DatePickerInput({
-  value,
-  onChange,
-  placeholder = "Pick a date",
-  id,
-  onClose,
-}: DatePickerInputProps) {
-  const [open, setOpen] = React.useState(false);
-  const [month, setMonth] = React.useState<Date | undefined>(value ?? new Date());
-  const [inputValue, setInputValue] = React.useState(formatDate(value));
-
-  React.useEffect(() => {
-    setInputValue(formatDate(value));
-    if (value) setMonth(value);
-  }, [value]);
-
-  const handleSelect = (date: Date | undefined) => {
-    onChange(date);
-    setInputValue(formatDate(date));
-    setOpen(false);
-    onClose?.();
-  };
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Popover open={open} onOpenChange={setOpen}>
-        <div className="flex rounded-xl border border-input bg-transparent shadow-xs overflow-hidden focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring">
-          <Input
-            id={id}
-            value={inputValue}
-            placeholder={placeholder}
-            onChange={(e) => {
-              const v = e.target.value;
-              setInputValue(v);
-              const d = new Date(v);
-              if (isValidDate(d)) {
-                onChange(d);
-                setMonth(d);
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "ArrowDown") {
-                e.preventDefault();
-                setOpen(true);
-              }
-            }}
-            className="h-9 rounded-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-          />
-          <PopoverTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              className="h-9 w-9 shrink-0 rounded-none border-l border-input"
-              aria-label="Open calendar"
-            >
-              <CalendarIcon className="size-4" />
-            </Button>
-          </PopoverTrigger>
-        </div>
-        <PopoverContent className="w-auto p-0 rounded-xl border shadow-lg" align="end" sideOffset={6}>
-          <Calendar
-            mode="single"
-            selected={value}
-            onSelect={handleSelect}
-            month={month}
-            onMonthChange={setMonth}
-            defaultMonth={value ?? new Date()}
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
-}
-
-interface DateFilterPickerProps {
+export interface DateFilterPickerProps {
   value: DateFilterState;
   onChange: (state: DateFilterState) => void;
   onRangeChange?: (range: { from: string; to: string } | null) => void;
@@ -247,7 +144,7 @@ export function DateFilterPicker({
               {state.preset === "specific_date" && (
                 <div className="space-y-2">
                   <Label>Date</Label>
-                  <DatePickerInput
+                  <DatePickerInputDate
                     value={state.specificDate}
                     onChange={(date) => applyAndCollapse({ ...state, specificDate: date })}
                     placeholder="Select date"
@@ -285,7 +182,7 @@ export function DateFilterPicker({
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <span className="text-xs text-muted-foreground">From</span>
-                      <DatePickerInput
+                      <DatePickerInputDate
                         value={state.customFrom}
                         onChange={(date) => apply({ ...state, customFrom: date })}
                         placeholder="Start date"
@@ -293,7 +190,7 @@ export function DateFilterPicker({
                     </div>
                     <div className="space-y-1.5">
                       <span className="text-xs text-muted-foreground">To</span>
-                      <DatePickerInput
+                      <DatePickerInputDate
                         value={state.customTo}
                         onChange={(date) => apply({ ...state, customTo: date })}
                         placeholder="End date"

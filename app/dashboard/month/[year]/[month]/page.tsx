@@ -1,10 +1,10 @@
 "use client";
 
 import { useMonthData } from "@/hooks/useMonthData";
-import MonthCharts from "@/components/MonthDetail/MonthCharts";
-import TransactionList from "@/components/MonthDetail/TransactionList";
-import Header from "@/components/Dashboard/Header";
-import AddTransactionDialog from "@/components/Dashboard/AddTransactionDialog";
+import MonthCharts from "@/components/month-detail/month-charts";
+import TransactionList from "@/components/month-detail/transaction-list";
+import Header from "@/components/dashboard/header";
+import AddTransactionDialog from "@/components/dashboard/add-transaction-dialog";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";

@@ -1,74 +1,11 @@
 "use client";
 
-import Header from "@/components/Dashboard/Header";
+import Header from "@/components/dashboard/header";
 import { useCategories } from "@/hooks/useCategories";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getCategoryIcon } from "@/lib/category-icons";
-import type { ICategory } from "@/models/Category";
 import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import Link from "next/link";
-import CreateCategoryDialog from "@/components/Dashboard/CreateCategoryDialog";
-
-function CategoryChip({ cat }: { cat: ICategory }) {
-  const Icon = getCategoryIcon(cat.icon);
-  return (
-    <div
-      className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm transition-colors hover:bg-muted/50"
-      style={{ borderLeftWidth: 4, borderLeftColor: cat.color }}
-    >
-      <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white"
-        style={{ backgroundColor: cat.color }}
-      >
-        <Icon className="h-5 w-5" />
-      </div>
-      <span className="font-medium text-foreground">{cat.name}</span>
-    </div>
-  );
-}
-
-function Section({
-  title,
-  icon: Icon,
-  categories,
-  isLoading,
-  emptyMessage,
-}: {
-  title: string;
-  icon: React.ElementType;
-  categories: ICategory[];
-  isLoading: boolean;
-  emptyMessage: string;
-}) {
-  return (
-    <Card className="rounded-2xl border shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Icon className="h-5 w-5" />
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="space-y-2">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-14 rounded-xl" />
-            ))}
-          </div>
-        ) : categories.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {categories.map((cat) => (
-              <CategoryChip key={String(cat._id)} cat={cat} />
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+import CreateCategoryDialog from "@/components/dashboard/create-category-dialog";
+import CategoriesSection from "@/components/categories/categories-section";
 
 export default function CategoriesPage() {
   const { categories, isLoading, error } = useCategories();
@@ -111,14 +48,14 @@ export default function CategoriesPage() {
         )}
 
         <div className="grid gap-8 md:grid-cols-2">
-          <Section
+          <CategoriesSection
             title="Income"
             icon={ArrowDownCircle}
             categories={incomeCategories}
             isLoading={isLoading}
             emptyMessage="No income categories yet. Create one to track income sources."
           />
-          <Section
+          <CategoriesSection
             title="Expense"
             icon={ArrowUpCircle}
             categories={expenseCategories}
