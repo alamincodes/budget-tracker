@@ -1,6 +1,7 @@
 "use client";
 
-import { Header, CreateCategoryDialog } from "@/components/dashboard";
+import Header from "../../../components/dashboard/header";
+import CreateCategoryDialog from "../../../components/dashboard/create-category-dialog";
 import { useCategories } from "@/hooks/useCategories";
 import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import Link from "next/link";
