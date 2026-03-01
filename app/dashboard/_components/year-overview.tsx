@@ -50,7 +50,7 @@ export default function YearOverview({
     return (
       <div className="space-y-3">
         <Skeleton className="h-5 w-32" />
-        <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {[...Array(12)].map((_, i) => (
             <Skeleton key={i} className="h-[130px] rounded-2xl" />
           ))}
@@ -80,7 +80,8 @@ export default function YearOverview({
           ].filter((d) => d.value > 0);
 
           // Running balance: what was carried in + this month's net.
-          const balance = monthData.openingBalance + monthData.income - monthData.expense;
+          const balance =
+            monthData.openingBalance + monthData.income - monthData.expense;
           const hasData = donutData.length > 0;
           const isCurrentMonth =
             new Date().getFullYear() === year &&
