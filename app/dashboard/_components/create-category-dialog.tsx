@@ -21,7 +21,9 @@ const TYPE_DEFAULT_COLOR: Record<"income" | "expense", string> = {
   expense: "#ef4444",
 };
 
-export default function CreateCategoryDialog({ triggerClassName }: { triggerClassName?: string } = {}) {
+export default function CreateCategoryDialog({
+  triggerClassName,
+}: { triggerClassName?: string } = {}) {
   const [open, setOpen] = useState(false);
   const { createCategory } = useCategories();
   const [name, setName] = useState("");
@@ -36,14 +38,18 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
 
   const handleTypeChange = (t: "income" | "expense") => {
     setType(t);
-    setColor(TYPE_DEFAULT_COLOR[t]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
     try {
-      await createCategory.mutateAsync({ name: name.trim(), type, color, icon: "Circle" });
+      await createCategory.mutateAsync({
+        name: name.trim(),
+        type,
+        color,
+        icon: "Circle",
+      });
       setOpen(false);
       reset();
     } catch {
@@ -52,7 +58,13 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) reset();
+      }}
+    >
       <DialogTrigger asChild>
         <Button
           variant="outline"
@@ -71,14 +83,19 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
               className="h-9 w-9 rounded-xl shrink-0 transition-colors duration-200"
               style={{ backgroundColor: color }}
             />
-            <DialogTitle className="text-base font-semibold">New category</DialogTitle>
+            <DialogTitle className="text-base font-semibold">
+              New category
+            </DialogTitle>
           </div>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 px-5 pb-5">
           {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="cat-name" className="text-xs font-medium text-muted-foreground">
+            <Label
+              htmlFor="cat-name"
+              className="text-xs font-medium text-muted-foreground"
+            >
               Name
             </Label>
             <Input
@@ -93,7 +110,9 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
 
           {/* Type */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Type</Label>
+            <Label className="text-xs font-medium text-muted-foreground">
+              Type
+            </Label>
             <div className="grid grid-cols-2 gap-2">
               {(["expense", "income"] as const).map((t) => (
                 <button
@@ -104,12 +123,18 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
                     "h-10 rounded-xl border text-sm font-semibold transition-all duration-150 capitalize",
                     type === t
                       ? "text-white shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:border-border/80"
+                      : "text-muted-foreground hover:text-foreground hover:border-border/80",
                   )}
                   style={
                     type === t
-                      ? { backgroundColor: color, borderColor: color }
-                      : { backgroundColor: "transparent", borderColor: "var(--border)" }
+                      ? {
+                          backgroundColor: TYPE_DEFAULT_COLOR[t],
+                          borderColor: TYPE_DEFAULT_COLOR[t],
+                        }
+                      : {
+                          backgroundColor: "transparent",
+                          borderColor: "var(--border)",
+                        }
                   }
                 >
                   {t}
@@ -118,36 +143,59 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
             </div>
           </div>
 
-          {/* Color — modern circle picker */}
+          {/* Color picker */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground">Color</Label>
-            <div className="grid grid-cols-5 gap-2.5">
-              {CATEGORY_COLORS.map((c) => {
-                const selected = color === c;
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setColor(c)}
-                    aria-label={`Color ${c}`}
-                    className={cn(
-                      "relative h-10 w-full rounded-full transition-all duration-150",
-                      "hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-                      selected && "scale-110 ring-2 ring-offset-2"
-                    )}
-                    style={{
-                      backgroundColor: c,
-                      ...(selected ? { ringColor: c } : {}),
-                    }}
-                  >
-                    {selected && (
-                      <span className="absolute inset-0 flex items-center justify-center">
-                        <Check className="h-4 w-4 text-white drop-shadow" strokeWidth={3} />
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium text-muted-foreground">
+                Color
+              </Label>
+              <span
+                className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium"
+                style={{ backgroundColor: `${color}20`, color }}
+              >
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: color }}
+                />
+                {color}
+              </span>
+            </div>
+            <div className="rounded-xl border bg-muted/30 p-2.5">
+              <div className="grid grid-cols-8 gap-5">
+                {CATEGORY_COLORS.map((c) => {
+                  const selected = color === c;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setColor(c)}
+                      aria-label={`Color ${c}`}
+                      className={cn(
+                        "relative h-6 w-6 rounded-full transition-all cursor-pointer duration-150",
+                        "hover:scale-110 focus-visible:outline-none",
+                        selected
+                          ? "scale-110 ring-2 ring-offset-1 ring-offset-background"
+                          : "hover:ring-1 hover:ring-offset-1 hover:ring-offset-background",
+                      )}
+                      style={{
+                        backgroundColor: c,
+                        ...(selected
+                          ? ({ "--tw-ring-color": c } as React.CSSProperties)
+                          : ({ "--tw-ring-color": c } as React.CSSProperties)),
+                      }}
+                    >
+                      {selected && (
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <Check
+                            className="h-3 w-3 text-white drop-shadow"
+                            strokeWidth={3}
+                          />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 

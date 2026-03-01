@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { TransactionWithCategory, useTransactions } from "@/hooks/useTransactions";
+import {
+  TransactionWithCategory,
+  useTransactions,
+} from "@/hooks/useTransactions";
 import { format } from "date-fns";
 import { Trash2, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,19 +17,24 @@ interface TransactionListProps {
   month: number;
 }
 
-export default function TransactionList({ transactions }: TransactionListProps) {
+export default function TransactionList({
+  transactions,
+}: TransactionListProps) {
   return (
     <div className="rounded-2xl border border-border bg-card overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3.5 border-b border-border">
         <h2 className="text-sm font-semibold text-foreground">Transactions</h2>
         <span className="text-xs text-muted-foreground tabular-nums">
-          {transactions.length} {transactions.length === 1 ? "entry" : "entries"}
+          {transactions.length}{" "}
+          {transactions.length === 1 ? "entry" : "entries"}
         </span>
       </div>
       <div>
         {transactions.length === 0 ? (
           <div className="flex flex-col items-center py-12 text-center">
-            <p className="text-sm text-muted-foreground">No transactions this month</p>
+            <p className="text-sm text-muted-foreground">
+              No transactions this month
+            </p>
             <p className="text-xs text-muted-foreground mt-1 opacity-60">
               Add one using the button above
             </p>
@@ -67,13 +75,17 @@ function TransactionRow({
       <div
         className={cn(
           "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40",
-          !isLast && "border-b border-border"
+          !isLast && "border-b border-border",
         )}
       >
         {/* Category avatar */}
         <div
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white"
-          style={{ backgroundColor: t.categoryId?.color || "var(--muted-foreground)" }}
+          style={{
+            backgroundColor:
+              `${t.categoryId?.color}20` || "var(--muted-foreground)",
+            color: t.categoryId?.color,
+          }}
         >
           {t.categoryId?.name?.[0]?.toUpperCase() ?? "?"}
         </div>
@@ -93,7 +105,7 @@ function TransactionRow({
         <span
           className={cn(
             "shrink-0 text-sm font-semibold tabular-nums",
-            isIncome ? "text-[var(--income)]" : "text-[var(--expense)]"
+            isIncome ? "text-[var(--income)]" : "text-[var(--expense)]",
           )}
         >
           {isIncome ? "+" : "−"}৳{t.amount.toLocaleString()}

@@ -1,15 +1,35 @@
 /** Shared category color palette for create/edit category forms */
 export const CATEGORY_COLORS = [
-  "#22c55e",
-  "#3b82f6",
+  // Reds & Pinks
   "#ef4444",
-  "#f97316",
-  "#eab308",
-  "#8b5cf6",
+  "#f43f5e",
   "#ec4899",
-  "#06b6d4",
+  "#db2777",
+  // Oranges & Yellows
+  "#f97316",
+  "#fb923c",
+  "#eab308",
+  "#facc15",
+  // Greens
+  "#22c55e",
+  "#16a34a",
   "#84cc16",
+  "#4ade80",
+  // Blues & Cyans
+  "#3b82f6",
+  "#2563eb",
+  "#06b6d4",
+  "#0ea5e9",
+  // Purples & Indigos
+  "#8b5cf6",
+  "#7c3aed",
+  "#6366f1",
+  "#a855f7",
+  // Neutrals
   "#64748b",
+  "#475569",
+  "#78716c",
+  "#6b7280",
 ];
 
 /** Icon options for category picker (value matches lucide icon name) */
