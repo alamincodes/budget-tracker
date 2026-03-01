@@ -26,6 +26,8 @@ type Tab = "overview" | "income" | "expense";
 const tooltipStyle = {
   borderRadius: "8px",
   border: "1px solid var(--border)",
+  backgroundColor: "var(--popover)",
+  color: "var(--popover-foreground)",
   boxShadow: "none",
   fontSize: "12px",
   padding: "6px 10px",
