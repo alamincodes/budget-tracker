@@ -194,16 +194,10 @@ function TransactionRow({
         onClick={() => setDetailOpen(true)}
         onKeyDown={(e) => e.key === "Enter" && setDetailOpen(true)}
         className={cn(
-          "group relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40 cursor-pointer",
+          "relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40 cursor-pointer",
           !isLast && "border-b border-border/60",
         )}
       >
-        {/* Left color accent */}
-        <span
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ backgroundColor: catColor }}
-        />
-
         {/* Category avatar */}
         <div
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold"
@@ -252,7 +246,7 @@ function TransactionRow({
 
         {/* Actions */}
         <div
-          className="flex shrink-0 items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="flex shrink-0 items-center gap-0.5"
           onClick={(e) => e.stopPropagation()}
         >
           <button
