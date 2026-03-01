@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import Transaction from '@/models/Transaction';
-import PlannedItem from '@/models/PlannedItem';
+import Transaction, { ITransaction } from '@/models/Transaction';
+import PlannedItem, { IPlannedItem } from '@/models/PlannedItem';
 import { getAuthUser } from '@/lib/auth';
 import mongoose from 'mongoose';
 import { dhakaYearMonth, recalculateFromMonth } from '@/lib/monthly-balance';
@@ -22,13 +22,14 @@ export async function PATCH(
     // Fetch original so we know the old date (needed to pick the correct
     // recalculation start month when the date is being changed).
     const userId = new mongoose.Types.ObjectId(user.userId);
-    const original = await Transaction.findOne({ _id: id, userId });
+    const txFilter = { _id: id, userId: user.userId } as unknown as mongoose.QueryFilter<ITransaction>;
+    const original = await Transaction.findOne(txFilter);
     if (!original) {
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
     }
 
     const transaction = await Transaction.findOneAndUpdate(
-      { _id: id, userId },
+      txFilter,
       {
         ...(amount !== undefined && { amount }),
         ...(type && { type }),
@@ -88,7 +89,7 @@ export async function DELETE(
     await connectDB();
 
     const userId = new mongoose.Types.ObjectId(user.userId);
-    const transaction = await Transaction.findOne({ _id: id, userId });
+    const transaction = await Transaction.findOne({ _id: id, userId: user.userId } as unknown as mongoose.QueryFilter<ITransaction>);
 
     if (!transaction) {
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
@@ -99,7 +100,7 @@ export async function DELETE(
 
     // Reset any planned item that was linked to this transaction.
     await PlannedItem.updateOne(
-      { transactionId: id },
+      { transactionId: id } as unknown as mongoose.QueryFilter<IPlannedItem>,
       { $unset: { transactionId: 1 }, $set: { status: 'pending' } }
     );
 
