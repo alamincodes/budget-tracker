@@ -17,7 +17,11 @@ export async function GET(req: Request) {
     const to = searchParams.get('to');
     const type = searchParams.get('type'); // 'income' or 'expense'
 
-    const matchStage: any = { userId: new mongoose.Types.ObjectId(user.userId) };
+    const matchStage: {
+      userId: mongoose.Types.ObjectId;
+      date?: { $gte: Date; $lte: Date };
+      type?: string;
+    } = { userId: new mongoose.Types.ObjectId(user.userId) };
 
     if (from && to) {
       matchStage.date = {

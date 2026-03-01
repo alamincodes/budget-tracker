@@ -18,6 +18,7 @@ interface YearOverviewProps {
     month: number;
     income: number;
     expense: number;
+    openingBalance: number;
   }[];
   year: number;
   isLoading: boolean;
@@ -78,7 +79,8 @@ export default function YearOverview({
             },
           ].filter((d) => d.value > 0);
 
-          const balance = monthData.income - monthData.expense;
+          // Running balance: what was carried in + this month's net.
+          const balance = monthData.openingBalance + monthData.income - monthData.expense;
           const hasData = donutData.length > 0;
           const isCurrentMonth =
             new Date().getFullYear() === year &&

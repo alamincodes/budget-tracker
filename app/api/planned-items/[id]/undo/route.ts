@@ -3,6 +3,8 @@ import connectDB from '@/lib/mongodb';
 import PlannedItem from '@/models/PlannedItem';
 import Transaction from '@/models/Transaction';
 import { getAuthUser } from '@/lib/auth';
+import mongoose from 'mongoose';
+import { dhakaYearMonth, recalculateFromMonth } from '@/lib/monthly-balance';
 
 export async function PATCH(
   _req: Request,
@@ -21,6 +23,7 @@ export async function PATCH(
 
     await connectDB();
 
+    const userId = new mongoose.Types.ObjectId(user.userId);
     const item = await PlannedItem.findById(id).populate('categoryId', 'name icon color type');
 
     if (!item || String(item.userId) !== String(user.userId)) {
@@ -34,10 +37,13 @@ export async function PATCH(
       );
     }
 
+    const linkedTx = await Transaction.findById(item.transactionId);
+    const txDate = linkedTx?.date;
+
     await Transaction.findByIdAndDelete(item.transactionId);
 
     await PlannedItem.updateOne(
-      { _id: id } as any,
+      { _id: id },
       { $set: { status: 'pending' }, $unset: { transactionId: 1 } }
     );
 
@@ -45,6 +51,11 @@ export async function PATCH(
       'categoryId',
       'name icon color type'
     );
+
+    if (txDate) {
+      const { year, month } = dhakaYearMonth(txDate);
+      await recalculateFromMonth(userId, year, month);
+    }
 
     return NextResponse.json(populated);
   } catch (error) {

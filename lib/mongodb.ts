@@ -29,24 +29,28 @@ if (!cached) {
 }
 
 async function connectDB() {
-  if (cached.conn) {
+  // Re-use connection only when Mongoose reports it is truly connected (readyState 1).
+  // Returning a stale cached.conn (e.g. after Atlas closes an idle socket) is the main
+  // cause of intermittent 500s in serverless environments.
+  if (cached.conn && mongoose.connection.readyState === 1) {
     return cached.conn;
   }
 
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
     };
 
-    cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
-      return mongoose;
-    });
+    cached.promise = mongoose.connect(uri, opts).then((m) => m);
   }
 
   try {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
+    cached.conn = null;
     throw e;
   }
 

@@ -3,6 +3,8 @@ import connectDB from '@/lib/mongodb';
 import PlannedItem from '@/models/PlannedItem';
 import Transaction from '@/models/Transaction';
 import { getAuthUser } from '@/lib/auth';
+import mongoose from 'mongoose';
+import { dhakaYearMonth, recalculateFromMonth } from '@/lib/monthly-balance';
 
 export async function PATCH(
   _req: Request,
@@ -34,9 +36,11 @@ export async function PATCH(
       );
     }
 
-    // Use UTC so the stored date's month is correct in all timezones (year overview uses $month in UTC).
+    // Use UTC so the stored date's month is correct in all timezones.
     const monthIndex = item.month >= 1 && item.month <= 12 ? item.month - 1 : 0;
     const date = new Date(Date.UTC(item.year, monthIndex, 1, 12, 0, 0));
+
+    const userId = new mongoose.Types.ObjectId(user.userId);
 
     const transactionPayload = {
       amount: item.amount,
@@ -44,7 +48,7 @@ export async function PATCH(
       categoryId: item.categoryId,
       note: item.title + (item.note ? ` · ${item.note}` : ''),
       date,
-      userId: user.userId,
+      userId,
     };
     const transaction = await Transaction.create(
       transactionPayload as Parameters<typeof Transaction.create>[0]
@@ -58,6 +62,9 @@ export async function PATCH(
       'categoryId',
       'name icon color type'
     );
+
+    const { year, month } = dhakaYearMonth(date);
+    await recalculateFromMonth(userId, year, month);
 
     return NextResponse.json(populated);
   } catch (error) {

@@ -3,6 +3,8 @@ import connectDB from '@/lib/mongodb';
 import Transaction from '@/models/Transaction';
 import PlannedItem from '@/models/PlannedItem';
 import { getAuthUser } from '@/lib/auth';
+import mongoose from 'mongoose';
+import { dhakaYearMonth, recalculateFromMonth } from '@/lib/monthly-balance';
 
 export async function PATCH(
   req: Request,
@@ -17,8 +19,16 @@ export async function PATCH(
 
     const { amount, type, categoryId, note, date } = await req.json();
 
+    // Fetch original so we know the old date (needed to pick the correct
+    // recalculation start month when the date is being changed).
+    const userId = new mongoose.Types.ObjectId(user.userId);
+    const original = await Transaction.findOne({ _id: id, userId });
+    if (!original) {
+      return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
+    }
+
     const transaction = await Transaction.findOneAndUpdate(
-      { _id: id, userId: user.userId } as any,
+      { _id: id, userId },
       {
         ...(amount !== undefined && { amount }),
         ...(type && { type }),
@@ -32,6 +42,26 @@ export async function PATCH(
     if (!transaction) {
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
     }
+
+    // Recalculate from the earliest affected Dhaka month.
+    const oldMonthInfo = dhakaYearMonth(original.date);
+    const newDate = date ? new Date(date) : original.date;
+    const newMonthInfo = dhakaYearMonth(newDate);
+
+    const startYear =
+      oldMonthInfo.year < newMonthInfo.year ||
+      (oldMonthInfo.year === newMonthInfo.year &&
+        oldMonthInfo.month <= newMonthInfo.month)
+        ? oldMonthInfo.year
+        : newMonthInfo.year;
+    const startMonth =
+      startYear === oldMonthInfo.year && startYear === newMonthInfo.year
+        ? Math.min(oldMonthInfo.month, newMonthInfo.month)
+        : startYear === oldMonthInfo.year
+          ? oldMonthInfo.month
+          : newMonthInfo.month;
+
+    await recalculateFromMonth(userId, startYear, startMonth);
 
     return NextResponse.json(transaction);
   } catch (error) {
@@ -57,19 +87,24 @@ export async function DELETE(
 
     await connectDB();
 
-    const transaction = await Transaction.findById(id);
+    const userId = new mongoose.Types.ObjectId(user.userId);
+    const transaction = await Transaction.findOne({ _id: id, userId });
 
-    if (!transaction || String(transaction.userId) !== String(user.userId)) {
+    if (!transaction) {
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
     }
 
+    const txDate = transaction.date;
     await Transaction.findByIdAndDelete(id);
 
-    // If this transaction was created from a planned item, reset the planned item
+    // Reset any planned item that was linked to this transaction.
     await PlannedItem.updateOne(
-      { transactionId: id } as any,
+      { transactionId: id },
       { $unset: { transactionId: 1 }, $set: { status: 'pending' } }
     );
+
+    const { year, month } = dhakaYearMonth(txDate);
+    await recalculateFromMonth(userId, year, month);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

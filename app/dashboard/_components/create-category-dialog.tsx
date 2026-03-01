@@ -13,18 +13,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCategories } from "@/hooks/useCategories";
 import { CATEGORY_COLORS } from "@/lib/category-options";
-import { FolderPlus } from "lucide-react";
+import { Check, FolderPlus } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const TYPE_DEFAULT_COLOR: Record<"income" | "expense", string> = {
+  income: "#22c55e",
+  expense: "#ef4444",
+};
 
 export default function CreateCategoryDialog({ triggerClassName }: { triggerClassName?: string } = {}) {
   const [open, setOpen] = useState(false);
   const { createCategory } = useCategories();
   const [name, setName] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
-  const [color, setColor] = useState(CATEGORY_COLORS[2]);
+  const [color, setColor] = useState(TYPE_DEFAULT_COLOR["expense"]);
+
   const reset = () => {
     setName("");
     setType("expense");
-    setColor(CATEGORY_COLORS[2]);
+    setColor(TYPE_DEFAULT_COLOR["expense"]);
+  };
+
+  const handleTypeChange = (t: "income" | "expense") => {
+    setType(t);
+    setColor(TYPE_DEFAULT_COLOR[t]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,7 +54,11 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className={`h-10 rounded-xl gap-2 text-sm${triggerClassName ? ` ${triggerClassName}` : ""}`}>
+        <Button
+          variant="outline"
+          size="sm"
+          className={`h-10 rounded-xl gap-2 text-sm${triggerClassName ? ` ${triggerClassName}` : ""}`}
+        >
           <FolderPlus className="h-4 w-4" />
           New category
         </Button>
@@ -52,7 +68,7 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
         <DialogHeader className="px-5 pt-5 pb-2">
           <div className="flex items-center gap-3">
             <div
-              className="h-9 w-9 rounded-xl shrink-0"
+              className="h-9 w-9 rounded-xl shrink-0 transition-colors duration-200"
               style={{ backgroundColor: color }}
             />
             <DialogTitle className="text-base font-semibold">New category</DialogTitle>
@@ -60,8 +76,11 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 px-5 pb-5">
+          {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="cat-name" className="text-xs font-medium text-muted-foreground">Name</Label>
+            <Label htmlFor="cat-name" className="text-xs font-medium text-muted-foreground">
+              Name
+            </Label>
             <Input
               id="cat-name"
               value={name}
@@ -72,6 +91,7 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
             />
           </div>
 
+          {/* Type */}
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-muted-foreground">Type</Label>
             <div className="grid grid-cols-2 gap-2">
@@ -79,13 +99,18 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
                 <button
                   key={t}
                   type="button"
-                  onClick={() => setType(t)}
-                  className="h-10 rounded-xl border text-sm font-semibold transition-colors capitalize"
-                  style={{
-                    backgroundColor: type === t ? color : "transparent",
-                    borderColor: type === t ? color : "var(--border)",
-                    color: type === t ? "white" : "var(--muted-foreground)",
-                  }}
+                  onClick={() => handleTypeChange(t)}
+                  className={cn(
+                    "h-10 rounded-xl border text-sm font-semibold transition-all duration-150 capitalize",
+                    type === t
+                      ? "text-white shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:border-border/80"
+                  )}
+                  style={
+                    type === t
+                      ? { backgroundColor: color, borderColor: color }
+                      : { backgroundColor: "transparent", borderColor: "var(--border)" }
+                  }
                 >
                   {t}
                 </button>
@@ -93,25 +118,36 @@ export default function CreateCategoryDialog({ triggerClassName }: { triggerClas
             </div>
           </div>
 
+          {/* Color — modern circle picker */}
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground">Color</Label>
-            <div className="grid grid-cols-5 gap-2">
-              {CATEGORY_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  className="h-10 rounded-xl transition-all hover:scale-105 focus:outline-none relative"
-                  style={{ backgroundColor: c }}
-                  onClick={() => setColor(c)}
-                  aria-label={`Color ${c}`}
-                >
-                  {color === c && (
-                    <span className="absolute inset-0 flex items-center justify-center">
-                      <span className="h-2.5 w-2.5 rounded-full bg-white/80" />
-                    </span>
-                  )}
-                </button>
-              ))}
+            <div className="grid grid-cols-5 gap-2.5">
+              {CATEGORY_COLORS.map((c) => {
+                const selected = color === c;
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setColor(c)}
+                    aria-label={`Color ${c}`}
+                    className={cn(
+                      "relative h-10 w-full rounded-full transition-all duration-150",
+                      "hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                      selected && "scale-110 ring-2 ring-offset-2"
+                    )}
+                    style={{
+                      backgroundColor: c,
+                      ...(selected ? { ringColor: c } : {}),
+                    }}
+                  >
+                    {selected && (
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <Check className="h-4 w-4 text-white drop-shadow" strokeWidth={3} />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

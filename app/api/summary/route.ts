@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Transaction from '@/models/Transaction';
 import { getAuthUser } from '@/lib/auth';
 import mongoose from 'mongoose';
+import { getOpeningBalance, dhakaYearMonth } from '@/lib/monthly-balance';
 
 export async function GET(req: Request) {
   try {
@@ -16,7 +17,12 @@ export async function GET(req: Request) {
     const from = searchParams.get('from');
     const to = searchParams.get('to');
 
-    const matchStage: any = { userId: new mongoose.Types.ObjectId(user.userId) };
+    const userId = new mongoose.Types.ObjectId(user.userId);
+
+    const matchStage: {
+      userId: mongoose.Types.ObjectId;
+      date?: { $gte: Date; $lte: Date };
+    } = { userId };
 
     if (from && to) {
       matchStage.date = {
@@ -43,26 +49,31 @@ export async function GET(req: Request) {
       if (item._id === 'expense') expense = item.total;
     });
 
-    // Opening balance = balance from all transactions before the range start (e.g. last month's closing).
-    // So "Balance" = last month's balance + (this month income - this month expense).
+    // Opening balance = cumulative balance from all transactions before `from`.
+    // Uses MonthlyBalance cache when `from` aligns with a Dhaka month start (the
+    // common "monthly" filter). Falls back to a direct aggregation otherwise.
     let openingBalance = 0;
     if (from) {
-      const opening = await Transaction.aggregate([
-        {
-          $match: {
-            userId: new mongoose.Types.ObjectId(user.userId),
-            date: { $lt: new Date(from) },
-          },
-        },
-        { $group: { _id: '$type', total: { $sum: '$amount' } } },
-      ]);
-      let openIncome = 0;
-      let openExpense = 0;
-      opening.forEach((item: { _id: string; total: number }) => {
-        if (item._id === 'income') openIncome = item.total;
-        if (item._id === 'expense') openExpense = item.total;
-      });
-      openingBalance = openIncome - openExpense;
+      const fromDate = new Date(from);
+      const { year, month } = dhakaYearMonth(fromDate);
+
+      // Check whether `from` is exactly the start of that Dhaka month.
+      // monthBoundsDhaka start = Date.UTC(year, month-1, 0, 18) — compare ms.
+      const expectedStart = new Date(Date.UTC(year, month - 1, 0, 18, 0, 0, 0));
+      if (fromDate.getTime() === expectedStart.getTime()) {
+        // Fast path: use stored (or lazily computed) MonthlyBalance record.
+        openingBalance = await getOpeningBalance(userId, year, month);
+      } else {
+        // Slow path: scan all transactions before `from` (for non-month filters).
+        const rows: { _id: string; total: number }[] = await Transaction.aggregate([
+          { $match: { userId, date: { $lt: fromDate } } },
+          { $group: { _id: '$type', total: { $sum: '$amount' } } },
+        ]);
+        for (const r of rows) {
+          if (r._id === 'income') openingBalance += r.total;
+          else if (r._id === 'expense') openingBalance -= r.total;
+        }
+      }
     }
 
     const balance = openingBalance + (income - expense);
@@ -72,7 +83,7 @@ export async function GET(req: Request) {
       income,
       expense,
       balance,
-      savingsRate: Math.max(0, savingsRate), // Ensure not negative if possible, or allow it. Usually savings rate is percentage of income saved. If balance is negative, savings rate is effectively negative or 0.
+      savingsRate: Math.max(0, savingsRate),
     });
   } catch (error) {
     console.error('Error fetching summary:', error);

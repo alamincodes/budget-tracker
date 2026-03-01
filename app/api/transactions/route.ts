@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import Transaction from '@/models/Transaction';
+import Transaction, { ITransaction } from '@/models/Transaction';
 import { getAuthUser } from '@/lib/auth';
 import mongoose from 'mongoose';
+import { dhakaYearMonth, recalculateFromMonth } from '@/lib/monthly-balance';
 
 export async function GET(req: Request) {
   try {
@@ -18,24 +19,22 @@ export async function GET(req: Request) {
     const type = searchParams.get('type');
     const categoryId = searchParams.get('categoryId');
 
-    const query: any = { userId: user.userId };
+    const query: {
+      userId: mongoose.Types.ObjectId;
+      date?: { $gte: Date; $lte: Date };
+      type?: string;
+      categoryId?: string;
+    } = { userId: new mongoose.Types.ObjectId(user.userId) };
 
     if (from && to) {
-      query.date = {
-        $gte: new Date(from),
-        $lte: new Date(to),
-      };
+      query.date = { $gte: new Date(from), $lte: new Date(to) };
     }
+    if (type) query.type = type;
+    if (categoryId) query.categoryId = categoryId;
 
-    if (type) {
-      query.type = type;
-    }
-
-    if (categoryId) {
-      query.categoryId = categoryId;
-    }
-
-    const transactions = await Transaction.find(query)
+    const transactions = await Transaction.find(
+      query as unknown as mongoose.QueryFilter<ITransaction>
+    )
       .populate('categoryId', 'name icon color type')
       .sort({ date: -1, createdAt: -1 });
 
@@ -73,14 +72,21 @@ export async function POST(req: Request) {
       );
     }
 
+    const userId = new mongoose.Types.ObjectId(user.userId);
+    const txDate = new Date(date);
+
     const transaction = await Transaction.create({
       amount,
       type,
       categoryId,
       note,
-      date: new Date(date),
-      userId: user.userId as any,
-    });
+      date: txDate,
+      userId,
+    } as Parameters<typeof Transaction.create>[0]);
+
+    // Keep MonthlyBalance in sync so future balance lookups are fast.
+    const { year, month } = dhakaYearMonth(txDate);
+    await recalculateFromMonth(userId, year, month);
 
     return NextResponse.json(transaction, { status: 201 });
   } catch (error) {
