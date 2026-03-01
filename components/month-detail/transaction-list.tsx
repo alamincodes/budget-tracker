@@ -321,11 +321,10 @@ function TransactionDetailModal({
   onDelete: () => void;
 }) {
   const isIncome = t.type === "income";
-  const catColor = t.categoryId?.color || "#64748b";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 sm:max-w-[360px] overflow-hidden">
+      <DialogContent className="p-0 sm:max-w-[360px] overflow-hidden w-[calc(100%-2rem)]">
         {/* Hero */}
         <div
           className={cn(
@@ -335,16 +334,22 @@ function TransactionDetailModal({
         >
           {/* Amount */}
           <p
-            className="text-3xl font-bold tabular-nums tracking-tight"
-            style={{ color: catColor }}
+            className={cn(
+              "text-3xl font-bold tabular-nums tracking-tight",
+              isIncome ? "text-(--income)" : "text-(--expense)"
+            )}
           >
             {isIncome ? "+" : "−"}৳{t.amount.toLocaleString()}
           </p>
 
           {/* Type badge */}
           <span
-            className="mt-2 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
-            style={{ backgroundColor: `${catColor}20`, color: catColor }}
+            className={cn(
+              "mt-2 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
+              isIncome
+                ? "bg-(--income)/15 text-(--income)"
+                : "bg-(--expense)/15 text-(--expense)"
+            )}
           >
             {isIncome ? (
               <ArrowUpRight className="h-3 w-3" />
@@ -361,7 +366,7 @@ function TransactionDetailModal({
             icon={<Tag className="h-3.5 w-3.5" />}
             label="Category"
             value={t.categoryId?.name || "Uncategorized"}
-            valueColor={catColor}
+            valueClassName={isIncome ? "text-(--income)" : "text-(--expense)"}
           />
           <DetailRow
             icon={<CalendarDays className="h-3.5 w-3.5" />}
@@ -405,23 +410,20 @@ function DetailRow({
   icon,
   label,
   value,
-  valueColor,
+  valueClassName,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  valueColor?: string;
+  valueClassName?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-muted/40">
-      <span className="text-muted-foreground shrink-0">{icon}</span>
-      <span className="text-xs text-muted-foreground w-16 shrink-0">
+    <div className="flex items-start gap-3 rounded-xl px-3 py-2.5 bg-muted/40">
+      <span className="text-muted-foreground shrink-0 mt-0.5">{icon}</span>
+      <span className="text-xs text-muted-foreground w-16 shrink-0 mt-0.5">
         {label}
       </span>
-      <span
-        className="text-xs font-medium text-foreground truncate"
-        style={valueColor ? { color: valueColor } : undefined}
-      >
+      <span className={cn("text-xs font-medium min-w-0 wrap-break-word", valueClassName ?? "text-foreground")}>
         {value}
       </span>
     </div>
