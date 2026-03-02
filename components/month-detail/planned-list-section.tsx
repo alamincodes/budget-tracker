@@ -12,10 +12,15 @@ import {
   ListTodo,
   Loader2,
   Pencil,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Tag,
+  FileText,
 } from "lucide-react";
 import AddPlannedItemDialog from "./add-planned-item-dialog";
 import EditPlannedItemDialog from "./edit-planned-item-dialog";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface PlannedListSectionProps {
@@ -225,23 +230,29 @@ function PlannedItemRow({
   isMarkDonePending?: boolean;
   isUndoPending?: boolean;
 }) {
+  const [detailOpen, setDetailOpen] = useState(false);
   const cat = item.categoryId as { name?: string; color?: string };
   const id = String(item._id);
   const isIncome = item.type === "income";
 
   return (
-    <motion.li
-      layout
-      initial={{ opacity: 0, y: -4 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.97 }}
-      transition={{ duration: 0.15 }}
-      className={cn(
-        "flex items-center gap-2.5 rounded-xl border border-border bg-background px-3 py-2.5",
-        isDone && "opacity-60"
-      )}
-    >
-      {/* Category dot */}
+    <>
+      <motion.li
+        layout
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97 }}
+        transition={{ duration: 0.15 }}
+        role="button"
+        tabIndex={0}
+        onClick={() => setDetailOpen(true)}
+        onKeyDown={(e) => e.key === "Enter" && setDetailOpen(true)}
+        className={cn(
+          "flex items-center gap-2.5 rounded-xl border border-border bg-background px-3 py-2.5 cursor-pointer transition-colors hover:bg-muted/40",
+          isDone && "opacity-60"
+        )}
+      >
+        {/* Category dot */}
       <div
         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold text-white"
         style={{ backgroundColor: cat?.color || "var(--muted-foreground)" }}
@@ -276,7 +287,10 @@ function PlannedItemRow({
       </span>
 
       {/* Actions — always visible */}
-      <div className="flex shrink-0 items-center gap-1">
+      <div
+        className="flex shrink-0 items-center gap-1"
+        onClick={(e) => e.stopPropagation()}
+      >
         {onEdit && (
           <button
             onClick={() => onEdit(item)}
@@ -335,5 +349,146 @@ function PlannedItemRow({
         <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" />
       )}
     </motion.li>
+
+      <PlannedItemDetailModal
+        item={item}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onEdit={() => {
+          setDetailOpen(false);
+          onEdit?.(item);
+        }}
+        onDelete={() => {
+          setDetailOpen(false);
+          onRequestDelete?.(id);
+        }}
+      />
+    </>
+  );
+}
+
+function PlannedItemDetailModal({
+  item,
+  open,
+  onOpenChange,
+  onEdit,
+  onDelete,
+}: {
+  item: PlannedItemWithCategory;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const isIncome = item.type === "income";
+  const cat = item.categoryId as { name?: string; color?: string };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="p-0 sm:max-w-[360px] overflow-hidden w-[calc(100%-2rem)]">
+        {/* Hero */}
+        <div
+          className={cn(
+            "relative flex flex-col items-center pt-8 pb-6 px-6 m-2 rounded-2xl",
+            isIncome ? "bg-(--income)/10" : "bg-(--expense)/10",
+          )}
+        >
+          <p
+            className={cn(
+              "text-3xl font-bold tabular-nums tracking-tight",
+              isIncome ? "text-(--income)" : "text-(--expense)",
+            )}
+          >
+            {isIncome ? "+" : "−"}৳{item.amount.toLocaleString()}
+          </p>
+          <span
+            className={cn(
+              "mt-2 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
+              isIncome
+                ? "bg-(--income)/15 text-(--income)"
+                : "bg-(--expense)/15 text-(--expense)",
+            )}
+          >
+            {isIncome ? (
+              <ArrowUpRight className="h-3 w-3" />
+            ) : (
+              <ArrowDownLeft className="h-3 w-3" />
+            )}
+            {isIncome ? "Income" : "Expense"}
+          </span>
+        </div>
+
+        {/* Details */}
+        <div className="px-5 pb-2 space-y-1">
+          <PlannedDetailRow
+            icon={<FileText className="h-3.5 w-3.5" />}
+            label="Title"
+            value={item.title}
+          />
+          <PlannedDetailRow
+            icon={<Tag className="h-3.5 w-3.5" />}
+            label="Category"
+            value={cat?.name ?? "Uncategorized"}
+            valueClassName={isIncome ? "text-(--income)" : "text-(--expense)"}
+          />
+          {item.note && (
+            <PlannedDetailRow
+              icon={<FileText className="h-3.5 w-3.5" />}
+              label="Note"
+              value={item.note}
+            />
+          )}
+          <PlannedDetailRow
+            icon={item.status === "done" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <ListTodo className="h-3.5 w-3.5" />}
+            label="Status"
+            value={item.status === "done" ? "Completed" : "Pending"}
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2 px-5 pb-5 pt-3">
+          <Button
+            variant="outline"
+            className="flex-1 h-10 rounded-xl gap-2 text-sm"
+            onClick={onEdit}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Edit
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1 h-10 rounded-xl gap-2 text-sm text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20"
+            onClick={onDelete}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PlannedDetailRow({
+  icon,
+  label,
+  value,
+  valueClassName,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  valueClassName?: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-xl px-3 py-2.5 bg-muted/40">
+      <span className="text-muted-foreground shrink-0 mt-0.5">{icon}</span>
+      <span className="text-xs text-muted-foreground w-16 shrink-0 mt-0.5">
+        {label}
+      </span>
+      <span className={cn("text-xs font-medium min-w-0 wrap-break-word", valueClassName ?? "text-foreground")}>
+        {value}
+      </span>
+    </div>
   );
 }

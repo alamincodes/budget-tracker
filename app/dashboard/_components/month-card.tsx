@@ -83,8 +83,8 @@ export default function MonthCard({ monthData, year }: MonthCardProps) {
                 }}
                 itemStyle={{ color: "var(--popover-foreground)" }}
                 labelStyle={{ color: "var(--popover-foreground)" }}
-                formatter={(v: number | undefined) => [
-                  `৳${(v ?? 0).toLocaleString()}`,
+                formatter={(value: unknown) => [
+                  `৳${Number(value ?? 0).toLocaleString()}`,
                   "",
                 ]}
                 labelFormatter={() => MONTH_NAMES_FULL[monthData.month - 1]}
