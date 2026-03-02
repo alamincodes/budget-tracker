@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI: string | undefined = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env');
+function getMongoUri(): string {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error('Please define the MONGODB_URI environment variable inside .env');
+  }
+  return uri;
 }
-
-const uri: string = MONGODB_URI;
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
@@ -43,7 +43,7 @@ async function connectDB() {
       socketTimeoutMS: 45000,
     };
 
-    cached.promise = mongoose.connect(uri, opts).then((m) => m);
+    cached.promise = mongoose.connect(getMongoUri(), opts).then((m) => m);
   }
 
   try {
