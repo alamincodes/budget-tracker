@@ -91,7 +91,7 @@ export function DateFilterPicker({
             onClick={() => setExpanded(false)}
           />
           <div
-            className="absolute top-full left-0 z-50 mt-2 w-[320px] rounded-2xl border border-border bg-popover p-4"
+            className="absolute top-full right-0 z-50 mt-2 w-[320px] max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-popover p-4 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="space-y-4">
@@ -99,7 +99,7 @@ export function DateFilterPicker({
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Range preset
                 </Label>
-                <div className="mt-2 grid grid-cols-2 gap-1.5">
+                <div className="mt-2 grid grid-cols-2 gap-1.5 dark:bg-muted/20 bg-muted/50 rounded-lg p-2">
                   {PRESETS.map((p) => (
                     <Button
                       key={p.value}

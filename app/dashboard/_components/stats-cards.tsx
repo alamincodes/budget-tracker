@@ -78,20 +78,26 @@ export default function StatsCards({ summary, isLoading }: StatsCardsProps) {
           ({ title, value, icon: Icon, iconColor, iconBg, valueColor }) => (
             <div
               key={title}
-              className="rounded-2xl border border-border bg-card p-4"
+              className="rounded-2xl border border-border bg-card p-3 sm:p-4 flex flex-col min-h-[88px]"
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-muted-foreground">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">
                   {title}
                 </span>
                 <div
-                  className={`flex h-7 w-7 items-center justify-center rounded-lg ${iconBg}`}
+                  className={cn(
+                    "flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg shrink-0",
+                    iconBg,
+                  )}
                 >
-                  <Icon className={cn("h-3.5 w-3.5", iconColor)} />
+                  <Icon className={cn("h-3 w-3 sm:h-3.5 sm:w-3.5", iconColor)} />
                 </div>
               </div>
               <p
-                className={`text-xl font-bold tabular-nums tracking-tight ${valueColor}`}
+                className={cn(
+                  "mt-auto pt-2 text-base sm:text-xl font-bold tabular-nums tracking-tight",
+                  valueColor,
+                )}
               >
                 {value}
               </p>

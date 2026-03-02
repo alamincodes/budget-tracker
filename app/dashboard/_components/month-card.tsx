@@ -32,6 +32,14 @@ export default function MonthCard({ monthData, year }: MonthCardProps) {
 
   const balance =
     monthData.openingBalance + monthData.income - monthData.expense;
+  const balanceStr = formatBalanceCompact(balance);
+  // Split long compact amount for two-line display in donut (e.g. "−৳1.5" + "Cr")
+  const balanceMatch =
+    balanceStr.length > 6 ? balanceStr.match(/^(.*?)(k|L|Cr)$/) : null;
+  const balanceParts =
+    balanceMatch && balanceMatch[2]
+      ? ([balanceMatch[1], balanceMatch[2]] as [string, string])
+      : null;
   const hasData = donutData.length > 0;
   const isCurrentMonth =
     new Date().getFullYear() === year &&
@@ -41,7 +49,7 @@ export default function MonthCard({ monthData, year }: MonthCardProps) {
     <div
       onClick={() => router.push(`/dashboard/month/${year}/${monthData.month}`)}
       className={cn(
-        "group flex flex-col items-center rounded-2xl border bg-card px-2 py-3 transition-all active:scale-[0.97] cursor-pointer",
+        "group flex flex-col items-center rounded-2xl border bg-card px-1.5 sm:px-2 py-2 sm:py-3 transition-all active:scale-[0.97] cursor-pointer min-h-[120px]",
         isCurrentMonth
           ? "border-primary/40 ring-4 ring-primary/20"
           : "border-border hover:border-primary/30 hover:bg-neutral-100 dark:hover:bg-card/10",
@@ -50,7 +58,7 @@ export default function MonthCard({ monthData, year }: MonthCardProps) {
       {/* Month label */}
       <span
         className={cn(
-          "text-[11px] font-semibold mb-2",
+          "text-[9px] sm:text-[11px] font-semibold mb-1 sm:mb-2",
           isCurrentMonth ? "text-primary" : "text-muted-foreground",
         )}
       >
@@ -58,7 +66,7 @@ export default function MonthCard({ monthData, year }: MonthCardProps) {
       </span>
 
       {/* Chart area */}
-      <div className="w-full aspect-square max-h-[100px]">
+      <div className="w-full aspect-square max-h-[100px] sm:max-h-[100px] flex-1 min-h-0">
         {hasData ? (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -84,8 +92,8 @@ export default function MonthCard({ monthData, year }: MonthCardProps) {
               <Pie
                 data={donutData}
                 dataKey="value"
-                innerRadius="50%"
-                outerRadius="88%"
+                innerRadius="52%"
+                outerRadius="85%"
                 strokeWidth={2}
                 stroke="var(--card)"
                 paddingAngle={2}
@@ -98,6 +106,9 @@ export default function MonthCard({ monthData, year }: MonthCardProps) {
                     if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                       const cx = viewBox.cx as number;
                       const cy = viewBox.cy as number;
+                      const fillColor =
+                        balance >= 0 ? "var(--foreground)" : "var(--expense)";
+                      const twoLines = balanceParts !== null;
                       return (
                         <text
                           x={cx}
@@ -105,19 +116,38 @@ export default function MonthCard({ monthData, year }: MonthCardProps) {
                           textAnchor="middle"
                           dominantBaseline="middle"
                         >
-                          <tspan
-                            x={cx}
-                            y={cy}
-                            fontSize="10"
-                            fontWeight="700"
-                            fill={
-                              balance >= 0
-                                ? "var(--foreground)"
-                                : "var(--expense)"
-                            }
-                          >
-                            {formatBalanceCompact(balance)}
-                          </tspan>
+                          {twoLines ? (
+                            <>
+                              <tspan
+                                x={cx}
+                                y={cy - 5}
+                                fontSize="9"
+                                fontWeight="700"
+                                fill={fillColor}
+                              >
+                                {balanceParts[0]}
+                              </tspan>
+                              <tspan
+                                x={cx}
+                                y={cy + 6}
+                                fontSize="8"
+                                fontWeight="700"
+                                fill={fillColor}
+                              >
+                                {balanceParts[1]}
+                              </tspan>
+                            </>
+                          ) : (
+                            <tspan
+                              x={cx}
+                              y={cy}
+                              fontSize="9"
+                              fontWeight="700"
+                              fill={fillColor}
+                            >
+                              {balanceStr}
+                            </tspan>
+                          )}
                         </text>
                       );
                     }
@@ -144,24 +174,24 @@ export default function MonthCard({ monthData, year }: MonthCardProps) {
         )}
       </div>
 
-      {/* Bottom stats */}
+      {/* Bottom stats — amounts at bottom */}
       {hasData ? (
-        <div className="mt-2 flex justify-between w-full">
-          <div className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-(--income) shrink-0" />
-            <span className="truncate text-sm font-medium text-muted-foreground">
+        <div className="mt-auto pt-1.5 sm:pt-2 flex justify-between w-full gap-1">
+          <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
+            <span className="h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full bg-(--income) shrink-0" />
+            <span className="truncate text-[10px] sm:text-sm font-medium text-muted-foreground">
               {formatBalanceCompact(monthData.income)}
             </span>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-(--expense) shrink-0" />
-            <span className="truncate text-sm font-medium text-muted-foreground">
+          <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
+            <span className="h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full bg-(--expense) shrink-0" />
+            <span className="truncate text-[10px] sm:text-sm font-medium text-muted-foreground">
               {formatBalanceCompact(monthData.expense)}
             </span>
           </div>
         </div>
       ) : (
-        <span className="mt-2 text-[9px] text-muted-foreground/50">
+        <span className="mt-auto pt-1.5 text-[8px] sm:text-[9px] text-muted-foreground/50">
           No data
         </span>
       )}
