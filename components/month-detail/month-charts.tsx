@@ -150,7 +150,7 @@ function OverviewChart({
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Tooltip
-              formatter={(v: number | undefined) => [`৳${(v ?? 0).toLocaleString()}`, ""]}
+              formatter={(value: unknown) => [`৳${Number(value ?? 0).toLocaleString()}`, ""]}
               contentStyle={tooltipContentStyle}
               itemStyle={tooltipItemStyle}
               labelStyle={tooltipLabelStyle}
@@ -245,7 +245,7 @@ function BarChartContent({
           <XAxis dataKey="value" type="number" hide />
           <Tooltip
             cursor={false}
-            formatter={(v: number | undefined) => [`৳${(v ?? 0).toLocaleString()}`, ""]}
+            formatter={(value: unknown) => [`৳${Number(value ?? 0).toLocaleString()}`, ""]}
             contentStyle={tooltipContentStyle}
             itemStyle={tooltipItemStyle}
             labelStyle={tooltipLabelStyle}

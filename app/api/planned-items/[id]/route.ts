@@ -22,8 +22,8 @@ export async function PATCH(
     const body = await req.json();
     const { title, type, amount, categoryId, note } = body;
 
-    const item = await PlannedItem.findOne({ _id: id, userId: user.userId });
-    if (!item) {
+    const item = await PlannedItem.findById(id);
+    if (!item || String(item.userId) !== String(user.userId)) {
       return NextResponse.json({ error: 'Planned item not found' }, { status: 404 });
     }
 

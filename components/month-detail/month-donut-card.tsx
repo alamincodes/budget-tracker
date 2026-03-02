@@ -50,7 +50,7 @@ export default function MonthDonutCard({
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Tooltip
-              formatter={(value: number | undefined) => [`৳${(value ?? 0).toLocaleString()}`, ""]}
+              formatter={(value: unknown) => [`৳${Number(value ?? 0).toLocaleString()}`, ""]}
               contentStyle={{
                 borderRadius: "10px",
                 border: "1px solid var(--border)",

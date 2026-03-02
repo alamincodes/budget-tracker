@@ -77,7 +77,7 @@ export default function CategoryBarChart({
             <XAxis dataKey="value" type="number" hide />
             <Tooltip
               cursor={false}
-              formatter={(value: number | undefined) => [`৳${(value ?? 0).toLocaleString()}`, ""]}
+              formatter={(value: unknown) => [`৳${Number(value ?? 0).toLocaleString()}`, ""]}
               contentStyle={tooltipStyle}
             />
             <Bar dataKey="value" radius={4} fill={defaultBarColor}>
