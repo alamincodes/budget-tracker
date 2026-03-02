@@ -1,5 +1,6 @@
 import { ArrowDownIcon, ArrowUpIcon, TrendingUp, Wallet } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 interface StatsCardsProps {
   summary: {
@@ -57,7 +58,8 @@ export default function StatsCards({ summary, isLoading }: StatsCardsProps) {
       icon: Wallet,
       iconColor: "text-primary",
       iconBg: "bg-primary/10",
-      valueColor: summary.balance >= 0 ? "text-foreground" : "text-[var(--expense)]",
+      valueColor:
+        summary.balance >= 0 ? "text-foreground" : "text-[var(--expense)]",
     },
     {
       title: "Savings Rate",
@@ -70,23 +72,33 @@ export default function StatsCards({ summary, isLoading }: StatsCardsProps) {
   ];
 
   return (
-    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-      {cards.map(({ title, value, icon: Icon, iconColor, iconBg, valueColor }) => (
-        <div
-          key={title}
-          className="rounded-2xl border border-border bg-card p-4"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-muted-foreground">{title}</span>
-            <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${iconBg}`}>
-              <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
+    <div className="">
+      <div className="grid gap-5 grid-cols-2 lg:grid-cols-4 dark:bg-muted/20 bg-muted/50 rounded-2xl p-4">
+        {cards.map(
+          ({ title, value, icon: Icon, iconColor, iconBg, valueColor }) => (
+            <div
+              key={title}
+              className="rounded-2xl border border-border bg-card p-4"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {title}
+                </span>
+                <div
+                  className={`flex h-7 w-7 items-center justify-center rounded-lg ${iconBg}`}
+                >
+                  <Icon className={cn("h-3.5 w-3.5", iconColor)} />
+                </div>
+              </div>
+              <p
+                className={`text-xl font-bold tabular-nums tracking-tight ${valueColor}`}
+              >
+                {value}
+              </p>
             </div>
-          </div>
-          <p className={`text-xl font-bold tabular-nums tracking-tight ${valueColor}`}>
-            {value}
-          </p>
-        </div>
-      ))}
+          ),
+        )}
+      </div>
     </div>
   );
 }

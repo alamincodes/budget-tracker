@@ -68,12 +68,13 @@ export default function DashboardPage() {
           <CreateCategoryDialog triggerClassName="w-full justify-center" />
           <AddTransactionDialog triggerClassName="w-full justify-center" />
         </div>
-
-        <YearOverview
-          data={yearOverview || []}
-          year={displayYear}
-          isLoading={isLoading}
-        />
+        <div className="dark:bg-muted/20 bg-muted/50  rounded-2xl p-4">
+          <YearOverview
+            data={yearOverview || []}
+            year={displayYear}
+            isLoading={isLoading}
+          />
+        </div>
       </main>
     </div>
   );

@@ -70,7 +70,7 @@ export function DateFilterPicker({
         type="button"
         variant="outline"
         className={cn(
-          "h-10 min-w-[160px] justify-between gap-2 rounded-xl font-normal text-sm"
+          "h-10 min-w-[160px] justify-between gap-2 rounded-xl font-normal text-sm bg-white",
         )}
         onClick={() => setExpanded((e) => !e)}
         aria-expanded={expanded}
@@ -112,8 +112,11 @@ export function DateFilterPicker({
                           ...state,
                           preset: p.value,
                           specificDate: state.specificDate ?? new Date(),
-                          specificYear: state.specificYear ?? new Date().getFullYear(),
-                          customFrom: state.customFrom ?? new Date(new Date().getFullYear(), 0, 1),
+                          specificYear:
+                            state.specificYear ?? new Date().getFullYear(),
+                          customFrom:
+                            state.customFrom ??
+                            new Date(new Date().getFullYear(), 0, 1),
                           customTo: state.customTo ?? new Date(),
                         };
                         if (p.value === "specific_date" && !next.specificDate)
@@ -121,7 +124,12 @@ export function DateFilterPicker({
                         if (p.value === "specific_year" && !next.specificYear)
                           next.specificYear = new Date().getFullYear();
                         if (p.value === "custom_range") {
-                          if (!next.customFrom) next.customFrom = new Date(new Date().getFullYear(), 0, 1);
+                          if (!next.customFrom)
+                            next.customFrom = new Date(
+                              new Date().getFullYear(),
+                              0,
+                              1,
+                            );
                           if (!next.customTo) next.customTo = new Date();
                         }
                         apply(next);
@@ -146,7 +154,9 @@ export function DateFilterPicker({
                   <Label>Date</Label>
                   <DatePickerInputDate
                     value={state.specificDate}
-                    onChange={(date) => applyAndCollapse({ ...state, specificDate: date })}
+                    onChange={(date) =>
+                      applyAndCollapse({ ...state, specificDate: date })
+                    }
                     placeholder="Select date"
                     onClose={() => setExpanded(false)}
                   />
@@ -157,9 +167,14 @@ export function DateFilterPicker({
                 <div className="space-y-2">
                   <Label>Year</Label>
                   <Select
-                    value={String(state.specificYear ?? new Date().getFullYear())}
+                    value={String(
+                      state.specificYear ?? new Date().getFullYear(),
+                    )}
                     onValueChange={(v) =>
-                      applyAndCollapse({ ...state, specificYear: parseInt(v, 10) })
+                      applyAndCollapse({
+                        ...state,
+                        specificYear: parseInt(v, 10),
+                      })
                     }
                   >
                     <SelectTrigger className="h-10 rounded-xl">
@@ -181,10 +196,14 @@ export function DateFilterPicker({
                   <Label>From – To</Label>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <span className="text-xs text-muted-foreground">From</span>
+                      <span className="text-xs text-muted-foreground">
+                        From
+                      </span>
                       <DatePickerInputDate
                         value={state.customFrom}
-                        onChange={(date) => apply({ ...state, customFrom: date })}
+                        onChange={(date) =>
+                          apply({ ...state, customFrom: date })
+                        }
                         placeholder="Start date"
                       />
                     </div>
@@ -213,8 +232,8 @@ export function DateFilterPicker({
                 state.preset === "monthly" ||
                 state.preset === "yearly") && (
                 <p className="text-xs text-muted-foreground">
-                  Showing data for current {state.preset} period. Change preset above to
-                  see a different range.
+                  Showing data for current {state.preset} period. Change preset
+                  above to see a different range.
                 </p>
               )}
             </div>

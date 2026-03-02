@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PlannedItemWithCategory } from "@/hooks/usePlannedItems";
 import { cn } from "@/lib/utils";
@@ -10,8 +11,11 @@ import {
   Trash2,
   ListTodo,
   Loader2,
+  Pencil,
 } from "lucide-react";
 import AddPlannedItemDialog from "./add-planned-item-dialog";
+import EditPlannedItemDialog from "./edit-planned-item-dialog";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface PlannedListSectionProps {
@@ -29,9 +33,12 @@ interface PlannedListSectionProps {
     note?: string;
   }) => Promise<unknown>;
   createPending: boolean;
+  onUpdate: (id: string, body: { title: string; type: "income" | "expense"; amount: number; categoryId: string; note?: string }) => Promise<unknown>;
+  updatePending: boolean;
   onMarkDone: (id: string) => void;
   onUndo: (id: string) => void;
   onDelete: (id: string) => void;
+  deletePending?: boolean;
   markDonePendingId: string | null;
   undoPendingId: string | null;
 }
@@ -43,14 +50,27 @@ export default function PlannedListSection({
   isLoading,
   onCreate,
   createPending,
+  onUpdate,
+  updatePending,
   onMarkDone,
   onUndo,
   onDelete,
+  deletePending = false,
   markDonePendingId,
   undoPendingId,
 }: PlannedListSectionProps) {
+  const [editingItem, setEditingItem] = useState<PlannedItemWithCategory | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
   const pending = items.filter((i) => i.status === "pending");
   const done = items.filter((i) => i.status === "done");
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirmId) {
+      onDelete(deleteConfirmId);
+      setDeleteConfirmId(null);
+    }
+  };
 
   return (
     <div className="rounded-2xl border border-border bg-card overflow-hidden">
@@ -121,8 +141,9 @@ export default function PlannedListSection({
                       <PlannedItemRow
                         key={String(item._id)}
                         item={item}
+                        onEdit={setEditingItem}
                         onMarkDone={onMarkDone}
-                        onDelete={onDelete}
+                        onRequestDelete={setDeleteConfirmId}
                         isMarkDonePending={markDonePendingId === String(item._id)}
                       />
                     ))}
@@ -146,8 +167,9 @@ export default function PlannedListSection({
                         key={String(item._id)}
                         item={item}
                         isDone
+                        onEdit={setEditingItem}
                         onUndo={onUndo}
-                        onDelete={onDelete}
+                        onRequestDelete={setDeleteConfirmId}
                         isUndoPending={undoPendingId === String(item._id)}
                       />
                     ))}
@@ -158,6 +180,28 @@ export default function PlannedListSection({
           </div>
         )}
       </div>
+
+      {editingItem && (
+        <EditPlannedItemDialog
+          key={String(editingItem._id)}
+          item={editingItem}
+          open={!!editingItem}
+          onOpenChange={(open) => !open && setEditingItem(null)}
+          onUpdate={onUpdate}
+          isPending={updatePending}
+        />
+      )}
+
+      <ConfirmModal
+        open={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={handleDeleteConfirm}
+        isPending={deletePending}
+        title="Remove from list?"
+        description="This planned item will be deleted. You can add it again anytime."
+        confirmLabel="Delete"
+        destructive
+      />
     </div>
   );
 }
@@ -165,17 +209,19 @@ export default function PlannedListSection({
 function PlannedItemRow({
   item,
   isDone,
+  onEdit,
   onMarkDone,
   onUndo,
-  onDelete,
+  onRequestDelete,
   isMarkDonePending,
   isUndoPending,
 }: {
   item: PlannedItemWithCategory;
   isDone?: boolean;
+  onEdit?: (item: PlannedItemWithCategory) => void;
   onMarkDone?: (id: string) => void;
   onUndo?: (id: string) => void;
-  onDelete: (id: string) => void;
+  onRequestDelete?: (id: string) => void;
   isMarkDonePending?: boolean;
   isUndoPending?: boolean;
 }) {
@@ -223,7 +269,7 @@ function PlannedItemRow({
       <span
         className={cn(
           "shrink-0 text-[13px] font-semibold tabular-nums",
-          isIncome ? "text-[var(--income)]" : "text-[var(--expense)]"
+          isIncome ? "text-(--income)" : "text-(--expense)"
         )}
       >
         {isIncome ? "+" : "−"}৳{item.amount.toLocaleString()}
@@ -231,14 +277,24 @@ function PlannedItemRow({
 
       {/* Actions — always visible */}
       <div className="flex shrink-0 items-center gap-1">
-        {/* Trash — always visible */}
-        <button
-          onClick={() => onDelete(id)}
-          aria-label="Delete"
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
+        {onEdit && (
+          <button
+            onClick={() => onEdit(item)}
+            aria-label="Edit"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        )}
+        {onRequestDelete && (
+          <button
+            onClick={() => onRequestDelete(id)}
+            aria-label="Delete"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        )}
 
         {isDone ? (
           /* Undo button */

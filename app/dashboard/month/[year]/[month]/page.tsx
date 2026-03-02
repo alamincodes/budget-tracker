@@ -25,6 +25,7 @@ export default function MonthPage() {
     items: plannedItems,
     isLoading: plannedLoading,
     createItem,
+    updateItem,
     markDone,
     undo,
     deleteItem,
@@ -92,9 +93,12 @@ export default function MonthPage() {
           isLoading={plannedLoading}
           onCreate={(body) => createItem.mutateAsync(body)}
           createPending={createItem.isPending}
+          onUpdate={(id, body) => updateItem.mutateAsync({ id, ...body })}
+          updatePending={updateItem.isPending}
           onMarkDone={handleMarkDone}
           onUndo={handleUndo}
           onDelete={(id) => deleteItem.mutate(id)}
+          deletePending={deleteItem.isPending}
           markDonePendingId={markDoneId}
           undoPendingId={undoId}
         />

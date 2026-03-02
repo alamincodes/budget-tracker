@@ -51,10 +51,18 @@ export default function AddTransactionDialog({
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
     if (next) {
+      const today = new Date();
       if (defaultYear != null && defaultMonth != null) {
-        setDate(toDateString(new Date(defaultYear, defaultMonth - 1, 1)));
+        const isCurrentMonth =
+          today.getFullYear() === defaultYear &&
+          today.getMonth() + 1 === defaultMonth;
+        setDate(
+          isCurrentMonth
+            ? toDateString(today)
+            : toDateString(new Date(defaultYear, defaultMonth - 1, 1)),
+        );
       } else {
-        setDate(toDateString(new Date()));
+        setDate(toDateString(today));
       }
     }
   };

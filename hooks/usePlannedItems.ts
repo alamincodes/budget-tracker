@@ -77,6 +77,31 @@ export function usePlannedItems(year: number, month: number) {
     },
   });
 
+  const updateItem = useMutation({
+    mutationFn: async ({
+      id,
+      ...data
+    }: {
+      id: string;
+      title?: string;
+      type?: 'income' | 'expense';
+      amount?: number;
+      categoryId?: string;
+      note?: string;
+    }) => {
+      const res = await fetch(`/api/planned-items/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
   const deleteItem = useMutation({
     mutationFn: async (id: string) => {
       const res = await fetch(`/api/planned-items/${id}`, { method: 'DELETE' });
@@ -92,6 +117,7 @@ export function usePlannedItems(year: number, month: number) {
     items,
     isLoading,
     createItem,
+    updateItem,
     markDone,
     undo,
     deleteItem,

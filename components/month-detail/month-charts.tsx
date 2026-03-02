@@ -23,7 +23,7 @@ interface MonthChartsProps {
 
 type Tab = "overview" | "income" | "expense";
 
-const tooltipStyle = {
+const tooltipContentStyle = {
   borderRadius: "8px",
   border: "1px solid var(--border)",
   backgroundColor: "var(--popover)",
@@ -32,6 +32,8 @@ const tooltipStyle = {
   fontSize: "12px",
   padding: "6px 10px",
 };
+const tooltipItemStyle = { color: "var(--popover-foreground)" };
+const tooltipLabelStyle = { color: "var(--popover-foreground)" };
 
 export default function MonthCharts({ transactions }: MonthChartsProps) {
   const [tab, setTab] = useState<Tab>("overview");
@@ -149,7 +151,9 @@ function OverviewChart({
           <PieChart>
             <Tooltip
               formatter={(v: number | undefined) => [`৳${(v ?? 0).toLocaleString()}`, ""]}
-              contentStyle={tooltipStyle}
+              contentStyle={tooltipContentStyle}
+              itemStyle={tooltipItemStyle}
+              labelStyle={tooltipLabelStyle}
             />
             <Pie
               data={donutData}
@@ -242,7 +246,9 @@ function BarChartContent({
           <Tooltip
             cursor={false}
             formatter={(v: number | undefined) => [`৳${(v ?? 0).toLocaleString()}`, ""]}
-            contentStyle={tooltipStyle}
+            contentStyle={tooltipContentStyle}
+            itemStyle={tooltipItemStyle}
+            labelStyle={tooltipLabelStyle}
           />
           <Bar dataKey="value" radius={4} fill={defaultColor}>
             {data.map((entry, i) => (

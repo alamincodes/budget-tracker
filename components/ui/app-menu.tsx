@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import {
   Popover,
   PopoverContent,
@@ -9,27 +9,26 @@ import {
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { useRouter, usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import {
-  Home,
-  LayoutGrid,
-  LogOut,
-  Moon,
-  Sun,
-  Wallet,
-} from "lucide-react";
+import { Home, LayoutGrid, LogOut, Moon, Sun, Wallet } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+function useHasMounted() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
+
 export function AppMenu() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHasMounted();
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [logoutPending, setLogoutPending] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-
-  useEffect(() => setMounted(true), []);
 
   const handleLogout = async () => {
     setLogoutPending(true);
@@ -50,7 +49,7 @@ export function AppMenu() {
           <PopoverTrigger asChild>
             <button
               aria-label="Open menu"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+              className="flex h-9 w-9 items-center cursor-pointer justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
             >
               <Wallet className="h-4 w-4" />
             </button>
@@ -68,10 +67,10 @@ export function AppMenu() {
                 href={href}
                 onClick={() => setMenuOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-muted",
+                  "flex items-center cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-primary/10",
                   pathname === href
                     ? "text-primary font-semibold"
-                    : "text-foreground"
+                    : "text-foreground",
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />
@@ -79,13 +78,13 @@ export function AppMenu() {
               </Link>
             ))}
 
-            <div className="my-1 border-t border-border" />
+            {/* <div className="my-1 ÷ß" /> */}
 
             {/* Theme toggle */}
             {mounted && (
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-muted"
+                className="flex w-full items-center cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-primary/10"
               >
                 {theme === "dark" ? (
                   <Sun className="h-4 w-4 shrink-0" />
@@ -96,7 +95,7 @@ export function AppMenu() {
               </button>
             )}
 
-            <div className="my-1 border-t border-border" />
+            {/* <div className="my-1 border-t border-border" /> */}
 
             {/* Logout */}
             <button
@@ -104,7 +103,7 @@ export function AppMenu() {
                 setMenuOpen(false);
                 setLogoutOpen(true);
               }}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/10"
+              className="flex w-full items-center cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/10"
             >
               <LogOut className="h-4 w-4 shrink-0" />
               Sign out
