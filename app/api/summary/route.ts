@@ -3,7 +3,6 @@ import connectDB from '@/lib/mongodb';
 import Transaction from '@/models/Transaction';
 import { getAuthUser } from '@/lib/auth';
 import mongoose from 'mongoose';
-import { getOpeningBalance, dhakaYearMonth } from '@/lib/monthly-balance';
 
 export async function GET(req: Request) {
   try {
@@ -49,34 +48,12 @@ export async function GET(req: Request) {
       if (item._id === 'expense') expense = item.total;
     });
 
-    // Opening balance = cumulative balance from all transactions before `from`.
-    // Uses MonthlyBalance cache when `from` aligns with a Dhaka month start (the
-    // common "monthly" filter). Falls back to a direct aggregation otherwise.
-    let openingBalance = 0;
-    if (from) {
-      const fromDate = new Date(from);
-      const { year, month } = dhakaYearMonth(fromDate);
-
-      // Check whether `from` is exactly the start of that Dhaka month.
-      // monthBoundsDhaka start = Date.UTC(year, month-1, 0, 18) — compare ms.
-      const expectedStart = new Date(Date.UTC(year, month - 1, 0, 18, 0, 0, 0));
-      if (fromDate.getTime() === expectedStart.getTime()) {
-        // Fast path: use stored (or lazily computed) MonthlyBalance record.
-        openingBalance = await getOpeningBalance(userId, year, month);
-      } else {
-        // Slow path: scan all transactions before `from` (for non-month filters).
-        const rows: { _id: string; total: number }[] = await Transaction.aggregate([
-          { $match: { userId, date: { $lt: fromDate } } },
-          { $group: { _id: '$type', total: { $sum: '$amount' } } },
-        ]);
-        for (const r of rows) {
-          if (r._id === 'income') openingBalance += r.total;
-          else if (r._id === 'expense') openingBalance -= r.total;
-        }
-      }
-    }
-
-    const balance = openingBalance + (income - expense);
+    // Balance = net cash flow for the selected period (income − expense).
+    // Opening/historical balance is intentionally excluded so that switching
+    // to a past period always shows how that period performed on its own,
+    // rather than a cumulative running total that would look unexpectedly
+    // higher or lower than the current period's balance.
+    const balance = income - expense;
     const savingsRate = income > 0 ? ((income - expense) / income) * 100 : 0;
 
     return NextResponse.json({
